@@ -23,7 +23,6 @@ public class AddGlobalList extends Fragment {
 
     private GlobalMethods databaseGlobal;
     private EditText inputTitle;
-    private EditText inputDescription;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -74,7 +73,6 @@ public class AddGlobalList extends Fragment {
         View view = inflater.inflate(R.layout.fragment_add_global_list, container, false);
         databaseGlobal = new GlobalMethods(getContext());
         inputTitle = view.findViewById(R.id.inputTitleGlobal);
-        inputDescription = view.findViewById(R.id.inputDescriptionGlobal);
         return inflater.inflate(R.layout.fragment_add_global_list, container, false);
     }
 

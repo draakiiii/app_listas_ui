@@ -24,7 +24,6 @@ import java.util.ArrayList;
 
 public class DialogFragmentAddGlobal extends DialogFragment {
     private EditText inputTitle;
-    private EditText inputDescription;
     private Button button_confirm_add;
     private Button button_cancel_add;
     private GlobalMethods database;
@@ -40,7 +39,6 @@ public class DialogFragmentAddGlobal extends DialogFragment {
         button_confirm_add = view.findViewById(R.id.buttonConfirmGlobal);
         button_cancel_add = view.findViewById(R.id.buttonCancelGlobal);
         inputTitle = view.findViewById(R.id.inputTitleGlobal);
-        inputDescription = view.findViewById(R.id.inputDescriptionGlobal);
         database = new GlobalMethods(getContext());
         mainActivity = new MainActivity();
         button_confirm_add.setOnClickListener(new View.OnClickListener() {

@@ -2,21 +2,25 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:ignore="HardcodedText">
-
+    tools:ignore="HardcodedText"
+    app:theme="@style/ThemeOverlay.AppCompat.DayNight">
+    <group>
+        <item
+            android:id="@+id/nav_add"
+            android:title="Add new list" />
     <item
         android:id="@+id/nav_settings"
         android:title="Settings" />
-
+        <item
+            android:id="@+id/nav_theme"
+            android:title="Switch theme" />
+    </group>
+    <group>
     <item android:title="Lists">
         <menu>
             <group android:checkableBehavior="single" android:id="@+id/groupLists">
             </group>
         </menu>
     </item>
-
-    <item
-        android:id="@+id/nav_add"
-        android:title="Add new list" />
-
+    </group>
 </menu>

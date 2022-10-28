@@ -1,18 +1,22 @@
 package com.example.new_list;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.new_list.controller.DialogFragmentAddGlobal;
 import com.example.new_list.controller.Settings;
+import com.example.new_list.database.GlobalListDao;
 import com.example.new_list.database.GlobalMethods;
 import com.example.new_list.model.GlobalList;
 import com.google.android.material.navigation.NavigationView;
@@ -69,11 +73,20 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        menu.clear();
-        for (int i = 0; i < arrayLists.size(); i++) {
-            menu.add(0, i, Menu.NONE, arrayLists.get(i).getName());
-        }
+//        menu.clear();
+//        for (GlobalList globalList : arrayLists) {
+//            toolbar.getMenu().add(Menu.NONE,globalList.getId(),Menu.NONE,globalList.getName());
+//        }
         return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        for (GlobalList globalList : arrayLists) {
+            navigationView.getMenu().add(Menu.NONE,globalList.getId(),Menu.NONE,globalList.getName());
+        }
+        return true;
     }
 
     private void setupDrawerContent(NavigationView navigationView) {
@@ -93,7 +106,21 @@ public class MainActivity extends AppCompatActivity {
         Class fragmentClass;
         switch(menuItem.getItemId()) {
             case R.id.nav_settings:
+                setTitle(menuItem.getTitle());
                 fragmentClass = Settings.class;
+                break;
+            case R.id.nav_theme:
+                int nightModeFlags = getResources().getConfiguration().uiMode &
+                        Configuration.UI_MODE_NIGHT_MASK;
+                switch (nightModeFlags) {
+                    case Configuration.UI_MODE_NIGHT_YES:
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                        break;
+
+                    case Configuration.UI_MODE_NIGHT_NO:
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);;
+                        break;
+                }
                 break;
             case R.id.nav_add:
 //                fragmentClass = DialogFragmentAddGlobal.class;
@@ -114,13 +141,12 @@ public class MainActivity extends AppCompatActivity {
 //        FragmentManager fragmentManager = getSupportFragmentManager();
 //        fragmentManager.beginTransaction().replace(R.id.flContent, fragment).commit();
 
-        // Highlight the selected item has been done by NavigationView
-        menuItem.setChecked(true);
 
-        // Set action bar title
-        setTitle(menuItem.getTitle());
         // Close the navigation drawer
         mDrawer.closeDrawers();
     }
 
+    public NavigationView getNavigationView() {
+        return navigationView;
+    }
 }
