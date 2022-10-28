@@ -4,23 +4,25 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:ignore="HardcodedText"
     app:theme="@style/ThemeOverlay.AppCompat.DayNight">
-    <group>
-        <item
-            android:id="@+id/nav_add"
-            android:title="Add new list" />
+
     <item
         android:id="@+id/nav_settings"
-        android:title="Settings" />
-        <item
-            android:id="@+id/nav_theme"
-            android:title="Switch theme" />
-    </group>
-    <group>
-    <item android:title="Lists">
+        android:title="Settings"
+        android:icon="@drawable/ic_baseline_settings_24"/>
+    <item
+        android:id="@+id/nav_theme"
+        android:title="Switch theme"
+        android:icon="@drawable/ic_baseline_dark_mode_24"/>
+    <item android:title="Lists" android:id="@+id/lists">
         <menu>
-            <group android:checkableBehavior="single" android:id="@+id/groupLists">
-            </group>
+            <item
+                android:id="@+id/nav_add"
+                android:title="Add new list"
+                android:icon="@drawable/ic_baseline_add_24"/>
+            <item
+                android:id="@+id/nav_create_folder"
+                android:title="Create folder - WIP"
+                android:icon="@drawable/ic_baseline_create_new_folder_24"/>
         </menu>
     </item>
-    </group>
 </menu>

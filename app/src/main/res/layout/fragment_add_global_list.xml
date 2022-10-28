@@ -1,45 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-        android:orientation="vertical"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:minWidth="250dp"
+    android:minHeight="150dp"
+    android:gravity="center">
 
-        <EditText
-            android:id="@+id/inputTitleGlobal"
+    <EditText
+        android:id="@+id/inputTitleGlobal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="4dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="4dp"
+        android:hint="@string/addGlobalList"
+        android:autofillHints="name"
+        android:inputType="text"
+        android:minHeight="48dp"/>
+
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/buttonCancelGlobal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="4dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginRight="4dp"
-            android:layout_marginBottom="4dp"
-            android:hint="@string/addGlobalList"
-            android:autofillHints="name"
-            android:inputType="text"
-            android:minHeight="48dp"/>
+            android:layout_margin="5dp"
+            android:background="@drawable/custom_button"
+            android:text="@string/cancel"/>
 
-
-        <LinearLayout
-            android:layout_width="wrap_content"
+        <Button
+            android:id="@+id/buttonConfirmGlobal"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/buttonCancelGlobal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:background="@drawable/custom_button"
-                android:text="@string/cancel"/>
-
-            <Button
-                android:id="@+id/buttonConfirmGlobal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:text="@string/confirm"
-                android:background="@drawable/custom_button"/>
-
-        </LinearLayout>
+            android:layout_margin="5dp"
+            android:text="@string/confirm"
+            android:background="@drawable/custom_button"/>
 
     </LinearLayout>
+
+</LinearLayout>

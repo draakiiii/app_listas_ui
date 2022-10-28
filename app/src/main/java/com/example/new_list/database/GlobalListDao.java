@@ -25,6 +25,9 @@ public interface GlobalListDao {
     @Query("SELECT * FROM globalList WHERE id LIKE :id LIMIT 1")
     GlobalList findById(int id);
 
+    @Query("DELETE FROM globallist")
+    void deleteAll();
+
     @Query("DELETE FROM globalList WHERE id = :id")
     void deleteById(int id);
 

@@ -10,9 +10,13 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
 import android.content.res.Configuration;
+import android.graphics.drawable.AdaptiveIconDrawable;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.SubMenu;
+import android.widget.Toast;
 
 import com.example.new_list.controller.DialogFragmentAddGlobal;
 import com.example.new_list.controller.Settings;
@@ -72,20 +76,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-//        menu.clear();
-//        for (GlobalList globalList : arrayLists) {
-//            toolbar.getMenu().add(Menu.NONE,globalList.getId(),Menu.NONE,globalList.getName());
-//        }
-        return super.onPrepareOptionsMenu(menu);
-    }
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        super.onCreateOptionsMenu(menu);
-        for (GlobalList globalList : arrayLists) {
-            navigationView.getMenu().add(Menu.NONE,globalList.getId(),Menu.NONE,globalList.getName());
+        for (GlobalList globalListNew : arrayLists) {
+            addGlobalListToMenu(globalListNew);
         }
+        mDrawer.close();
         return true;
     }
 
@@ -108,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.nav_settings:
                 setTitle(menuItem.getTitle());
                 fragmentClass = Settings.class;
+                mDrawer.close();
                 break;
             case R.id.nav_theme:
                 int nightModeFlags = getResources().getConfiguration().uiMode &
@@ -116,19 +112,23 @@ public class MainActivity extends AppCompatActivity {
                     case Configuration.UI_MODE_NIGHT_YES:
                         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
                         break;
-
                     case Configuration.UI_MODE_NIGHT_NO:
                         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);;
                         break;
                 }
+                mDrawer.close();
                 break;
             case R.id.nav_add:
 //                fragmentClass = DialogFragmentAddGlobal.class;
                 DialogFragmentAddGlobal dialogFragmentAddGlobal = new DialogFragmentAddGlobal();
                 dialogFragmentAddGlobal.show(getSupportFragmentManager(),"DialogFragmentAddGlobal");
                 break;
+            case R.id.nav_create_folder:
+                System.out.println("NO DISPONIBLE");
+                database.deleteAll();
             default:
-                fragmentClass = Settings.class;
+                System.out.println("LISTALISTALISTA");
+                Toast.makeText(this,"JAJA",Toast.LENGTH_LONG);
         }
 
 //        try {
@@ -146,7 +146,19 @@ public class MainActivity extends AppCompatActivity {
         mDrawer.closeDrawers();
     }
 
-    public NavigationView getNavigationView() {
-        return navigationView;
+    public void addGlobalListToMenu(GlobalList globalList) {
+        navigationView.getMenu().add(Menu.NONE,globalList.getId(),Menu.NONE,globalList.getName()).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                setTitle(item.getTitle());
+                mDrawer.close();
+                return true;
+            }
+        });
+    }
+
+    public void addGlobalListToArray(GlobalList globalList) {
+        addGlobalListToMenu(globalList);
+        arrayLists.add(globalList);
     }
 }

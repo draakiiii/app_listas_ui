@@ -27,7 +27,7 @@ public class DialogFragmentAddGlobal extends DialogFragment {
     private Button button_confirm_add;
     private Button button_cancel_add;
     private GlobalMethods database;
-    MainActivity mainActivity;
+    private MainActivity activity;
 
     @SuppressLint("MissingInflatedId")
     @Nullable
@@ -36,11 +36,11 @@ public class DialogFragmentAddGlobal extends DialogFragment {
         super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.fragment_add_global_list,container,false);
         super.onCreate(savedInstanceState);
+        activity = (MainActivity) this.getActivity();
         button_confirm_add = view.findViewById(R.id.buttonConfirmGlobal);
         button_cancel_add = view.findViewById(R.id.buttonCancelGlobal);
         inputTitle = view.findViewById(R.id.inputTitleGlobal);
         database = new GlobalMethods(getContext());
-        mainActivity = new MainActivity();
         button_confirm_add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -49,6 +49,7 @@ public class DialogFragmentAddGlobal extends DialogFragment {
                     GlobalList globalList = new GlobalList(inputTitle.getText().toString(),DataConverter.fromArrayList(arrayList));
                     database.addItem(globalList);
                     System.out.println("Global list added");
+                    activity.addGlobalListToArray(globalList);
                     closeDialog();
                 }
             }

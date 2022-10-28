@@ -15,7 +15,6 @@ public class GlobalMethods {
     private static GlobalMethods db;
     private GlobalListDao globalListDao;
 
-
     public GlobalMethods(Context context) {
         Context appContext = context.getApplicationContext();
         DatabaseGlobalList database = Room.databaseBuilder(appContext, DatabaseGlobalList.class, "globalList")
@@ -34,6 +33,10 @@ public class GlobalMethods {
 
     public List<GlobalList> getItems() {
         return globalListDao.getAll();
+    }
+
+    public void deleteAll() {
+        globalListDao.deleteAll();
     }
 
     public GlobalList globalList(int id) {
