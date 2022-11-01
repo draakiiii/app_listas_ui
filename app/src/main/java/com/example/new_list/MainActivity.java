@@ -8,7 +8,11 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.drawable.AdaptiveIconDrawable;
 import android.os.Bundle;
@@ -16,16 +20,23 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.SubMenu;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.new_list.controller.DialogFragmentAddGlobal;
+import com.example.new_list.controller.PrivateListFragment;
 import com.example.new_list.controller.Settings;
 import com.example.new_list.database.GlobalListDao;
 import com.example.new_list.database.GlobalMethods;
+import com.example.new_list.database.ItemAdapter;
+import com.example.new_list.helper.DataConverter;
 import com.example.new_list.model.GlobalList;
+import com.example.new_list.model.Item;
 import com.google.android.material.navigation.NavigationView;
 
+import java.sql.SQLOutput;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends AppCompatActivity {
     private DrawerLayout mDrawer;
@@ -77,8 +88,10 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        System.out.println("------- LISTAS GLOBALES --------");
         for (GlobalList globalListNew : arrayLists) {
             addGlobalListToMenu(globalListNew);
+            System.out.println(globalListNew);
         }
         mDrawer.close();
         return true;
@@ -127,7 +140,6 @@ public class MainActivity extends AppCompatActivity {
                 System.out.println("NO DISPONIBLE");
                 database.deleteAll();
             default:
-                System.out.println("LISTALISTALISTA");
                 Toast.makeText(this,"JAJA",Toast.LENGTH_LONG);
         }
 
@@ -151,7 +163,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 setTitle(item.getTitle());
+                Bundle bundle = new Bundle();
+                bundle.putInt("globallist", globalList.getId());
                 mDrawer.close();
+                getSupportFragmentManager().beginTransaction()
+                        .setReorderingAllowed(true)
+                        .replace(R.id.flContent, PrivateListFragment.class,bundle)
+                        .commit();
                 return true;
             }
         });
@@ -161,4 +179,5 @@ public class MainActivity extends AppCompatActivity {
         addGlobalListToMenu(globalList);
         arrayLists.add(globalList);
     }
+
 }

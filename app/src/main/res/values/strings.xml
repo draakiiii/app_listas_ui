@@ -8,7 +8,7 @@
     <string name="confirm">confirm</string>
     <string name="cancel">cancel</string>
     <string name="delete">delete</string>
-    <string name="add">add</string>
+    <string name="addItem">add item</string>
     <string name="set_title">Set a title</string>
     <string name="set_description">Introduce a description</string>
     <string name="done">done</string>
@@ -16,4 +16,6 @@
     <string name="navigation_drawer_open">open</string>
     <string name="addGlobalList">Introduce a name</string>
     <string name="next">next</string>
+    <string name="addPrivateList">add new section</string>
+    <string name="errorIntroduceTitle">You did not enter a title</string>
 </resources>

@@ -48,10 +48,14 @@ public class GlobalMethods {
     }
 
     public void updateItem(GlobalList globalList) {
-        globalListDao.updateItem(globalList.getName(), globalList.getId());
+        globalListDao.updateItem(globalList.getLists(),globalList.getId());
     }
 
     public void deleteItem(int id) {
         globalListDao.deleteById(id);
+    }
+
+    public GlobalList findById(int id) {
+        return globalListDao.findById(id);
     }
 }

@@ -63,6 +63,6 @@ public class GlobalList implements Serializable {
 
     @Override
     public String toString() {
-        return name + " | " + id + " | " + lists;
+        return name + " | " + id + " | " + lists + "--------------\n";
     }
 }

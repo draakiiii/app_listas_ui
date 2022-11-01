@@ -31,8 +31,8 @@ public interface GlobalListDao {
     @Query("DELETE FROM globalList WHERE id = :id")
     void deleteById(int id);
 
-    @Query("UPDATE globalList SET name = :name WHERE id =:id")
-    void updateItem(String name, int id);
+    @Query("UPDATE globalList SET listOfLists = :listOfLists WHERE id =:id")
+    void updateItem(String listOfLists, int id);
 
     @Insert(onConflict = REPLACE)
     void insert(GlobalList globalList);

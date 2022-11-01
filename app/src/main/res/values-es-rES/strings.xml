@@ -7,7 +7,7 @@
     <string name="confirm">Confirmar</string>
     <string name="cancel">Cancelar</string>
     <string name="delete">Eliminar</string>
-    <string name="add">Añadir</string>
+    <string name="addItem">Añadir elemento</string>
     <string name="set_title">Introduce un título</string>
     <string name="set_description">Introduce una descripción</string>
     <string name="done">Hecho</string>
@@ -15,4 +15,6 @@
     <string name="nav_open">Abrir</string>
     <string name="nav_close">Cerrar</string>
     <string name="addGlobalList">Introduce un nombre</string>
+    <string name="addPrivateList">añadir nueva sección</string>
+    <string name="errorIntroduceTitle">No has introducido un título</string>
 </resources>
