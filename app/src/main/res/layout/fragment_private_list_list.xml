@@ -6,17 +6,25 @@
     android:fillViewport="true"
     android:id="@+id/horizontalScroll"
     android:layout_marginTop="10dp">
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:id="@+id/linearLayoutList">
-
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@+id/linearLayoutListPrivate"
+            android:orientation="horizontal">
+        </LinearLayout>
         <Button
             android:id="@+id/addPrivateList"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/addPrivateList"
-            android:layout_marginHorizontal="10dp"
-            android:layout_marginVertical="10dp"/>
-    </LinearLayout>
+            android:layout_marginRight="10dp"
+            android:layout_toRightOf="@id/linearLayoutListPrivate"
+            android:layout_centerHorizontal="true"
+            android:paddingVertical="10dp"/>
+
+    </RelativeLayout>
 </HorizontalScrollView>

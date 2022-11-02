@@ -6,6 +6,10 @@
     app:theme="@style/ThemeOverlay.AppCompat.DayNight">
 
     <item
+        android:id="@+id/nav_main"
+        android:title="Main"
+        android:icon="@drawable/ic_baseline_dvr_24"/>
+    <item
         android:id="@+id/nav_settings"
         android:title="Settings"
         android:icon="@drawable/ic_baseline_settings_24"/>

@@ -18,4 +18,8 @@
     <string name="next">next</string>
     <string name="addPrivateList">add new section</string>
     <string name="errorIntroduceTitle">You did not enter a title</string>
+    <string name="duplicate">duplicate</string>
+    <string name="dialogEditItem">Edit item</string>
+    <string name="dialogAddItem">Add item</string>
+    <string name="settings">Settings</string>
 </resources>

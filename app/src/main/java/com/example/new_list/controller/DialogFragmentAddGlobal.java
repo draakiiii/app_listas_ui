@@ -45,7 +45,7 @@ public class DialogFragmentAddGlobal extends DialogFragment {
         button_confirm_add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!inputTitle.getText().equals("")) {
+                if (!inputTitle.getText().toString().matches("")) {
                     ArrayList<ArrayList> arrayList = new ArrayList<>();
                     GlobalList globalList = new GlobalList(inputTitle.getText().toString(),DataConverter.fromArrayList(arrayList));
                     database.addItem(globalList);

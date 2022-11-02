@@ -2,10 +2,10 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="SETTINGS - WIP"
-        android:textSize="50dp"
-        android:textAlignment="center"/>
+<TextView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:text="MAIN VIEW - WIP"
+    android:textSize="50dp"
+    android:textAlignment="center"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

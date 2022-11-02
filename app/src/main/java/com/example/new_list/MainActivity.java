@@ -10,6 +10,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.annotation.SuppressLint;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
@@ -20,12 +21,15 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.SubMenu;
+import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.new_list.controller.DialogFragmentAddGlobal;
+import com.example.new_list.controller.MainFragment;
 import com.example.new_list.controller.PrivateListFragment;
 import com.example.new_list.controller.Settings;
+import com.example.new_list.controller.SettingsFragment;
 import com.example.new_list.database.GlobalListDao;
 import com.example.new_list.database.GlobalMethods;
 import com.example.new_list.database.ItemAdapter;
@@ -36,6 +40,7 @@ import com.google.android.material.navigation.NavigationView;
 
 import java.sql.SQLOutput;
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends AppCompatActivity {
@@ -44,7 +49,9 @@ public class MainActivity extends AppCompatActivity {
     public NavigationView navigationView;
     private GlobalMethods database;
     private Menu menu;
+    private Menu menuPrivate;
     private ArrayList<GlobalList> arrayLists;
+    private static AtomicInteger countButtonFolder;
 
     // Make sure to be using androidx.appcompat.app.ActionBarDrawerToggle version.
     private ActionBarDrawerToggle drawerToggle;
@@ -58,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
         // Set a Toolbar to replace the ActionBar.
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         // This will display an Up icon (<-), we will replace it with hamburger later
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -66,12 +72,12 @@ public class MainActivity extends AppCompatActivity {
         mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         // Find our drawer view
         navigationView = (NavigationView) findViewById(R.id.nvView);
-
         arrayLists = (ArrayList<GlobalList>) database.getItems();
-        menu = toolbar.getMenu();
 
+        countButtonFolder = new AtomicInteger(0);
         // Setup drawer view
         setupDrawerContent(navigationView);
+        openMainView();
     }
 
     @Override
@@ -114,9 +120,12 @@ public class MainActivity extends AppCompatActivity {
         Class fragmentClass;
         switch(menuItem.getItemId()) {
             case R.id.nav_settings:
-                setTitle(menuItem.getTitle());
-                fragmentClass = Settings.class;
+                setTitle(R.string.settings);
                 mDrawer.close();
+                getSupportFragmentManager().beginTransaction()
+                        .setReorderingAllowed(true)
+                        .replace(R.id.flContent, SettingsFragment.class,null)
+                        .commit();
                 break;
             case R.id.nav_theme:
                 int nightModeFlags = getResources().getConfiguration().uiMode &
@@ -136,48 +145,73 @@ public class MainActivity extends AppCompatActivity {
                 DialogFragmentAddGlobal dialogFragmentAddGlobal = new DialogFragmentAddGlobal();
                 dialogFragmentAddGlobal.show(getSupportFragmentManager(),"DialogFragmentAddGlobal");
                 break;
+            case R.id.nav_main:
+                openMainView();
+                break;
             case R.id.nav_create_folder:
                 System.out.println("NO DISPONIBLE");
-                database.deleteAll();
+                addFolderToMenu();
+//                database.deleteAll();
             default:
                 Toast.makeText(this,"JAJA",Toast.LENGTH_LONG);
         }
 
-//        try {
-//            fragment = (Fragment) fragmentClass.newInstance();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-
-        // Insert the fragment by replacing any existing fragment
-//        FragmentManager fragmentManager = getSupportFragmentManager();
-//        fragmentManager.beginTransaction().replace(R.id.flContent, fragment).commit();
-
-
         // Close the navigation drawer
         mDrawer.closeDrawers();
+    }
+
+    public void addFolderToMenu() {
     }
 
     public void addGlobalListToMenu(GlobalList globalList) {
         navigationView.getMenu().add(Menu.NONE,globalList.getId(),Menu.NONE,globalList.getName()).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                setTitle(item.getTitle());
-                Bundle bundle = new Bundle();
-                bundle.putInt("globallist", globalList.getId());
-                mDrawer.close();
-                getSupportFragmentManager().beginTransaction()
-                        .setReorderingAllowed(true)
-                        .replace(R.id.flContent, PrivateListFragment.class,bundle)
-                        .commit();
-                return true;
+                try {
+                    openGlobalList(globalList);
+                    return true;
+                } catch (Exception e) {
+                    System.out.println("ERROR --> " + e.getLocalizedMessage());
+                    return false;
+                }
             }
         });
+    }
+
+    public void openGlobalList(GlobalList globalList) {
+        toolbar.getMenu().clear();
+        toolbar.getMenu().add("Remove").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                database.deleteItem(globalList.getId());
+                navigationView.getMenu().removeItem(globalList.getId());
+                openMainView();
+                return false;
+            }
+        });
+        setTitle(globalList.getName());
+        Bundle bundle = new Bundle();
+        bundle.putInt("globallist", globalList.getId());
+        mDrawer.close();
+        getSupportFragmentManager().beginTransaction()
+                .setReorderingAllowed(true)
+                .replace(R.id.flContent, PrivateListFragment.class,bundle)
+                .commit();
     }
 
     public void addGlobalListToArray(GlobalList globalList) {
         addGlobalListToMenu(globalList);
         arrayLists.add(globalList);
+        openGlobalList(globalList);
+    }
+
+    public void openMainView() {
+        setTitle(R.string.app_name);
+        mDrawer.close();
+        getSupportFragmentManager().beginTransaction()
+                .setReorderingAllowed(true)
+                .replace(R.id.flContent, MainFragment.class,null)
+                .commit();
     }
 
 }
