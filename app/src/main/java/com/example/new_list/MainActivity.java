@@ -12,6 +12,7 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,6 +28,8 @@ import com.example.new_list.controller.SettingsFragment;
 import com.example.new_list.database.GlobalMethods;
 import com.example.new_list.helper.DataConverter;
 import com.example.new_list.model.GlobalList;
+import com.example.new_list.model.Item;
+import com.example.new_list.model.Section;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
@@ -137,7 +140,23 @@ public class MainActivity extends AppCompatActivity {
                 openMainView();
                 break;
             case R.id.nav_create_folder:
-                System.out.println("NO DISPONIBLE");
+                ArrayList<ArrayList> arrayOfArrays = new ArrayList<>();
+                ArrayList<Item> listItems = new ArrayList<>();
+                ArrayList<Section> listColumns = new ArrayList<>();
+                String name = "Nombre de la sección";
+                Section columns = new Section(name, listItems);
+                listColumns.add(columns);
+                arrayOfArrays.add(listColumns);
+                listItems.add(new Item("Nombre de item", "Descripcion"));
+                GlobalList globalList = new GlobalList("Nombre de la lista global",DataConverter.fromArrayList(arrayOfArrays));
+                System.out.println("Lista global --> " + globalList);
+                ArrayList<ArrayList> arrayOfArrays2 = DataConverter.fromString(globalList.getLists());
+                System.out.println("Lista de secciones --> " + arrayOfArrays2.get(0));
+                System.out.println("Lista de Items --> " + arrayOfArrays2.get(0).get(0));
+                ArrayList<Section> sectionArrayList2 = DataConverter.changeSectionType(arrayOfArrays2.get(0));
+                System.out.println("Nombre de lista --> " + sectionArrayList2.get(0).getTitle());
+                ArrayList<Item> itemArrayList2 = DataConverter.changeItemType(sectionArrayList2.get(0).getListOfItems());
+                System.out.println("Item 1 --> " + itemArrayList2.get(0).getTitle());
             default:
                 System.out.println("Default.");
         }

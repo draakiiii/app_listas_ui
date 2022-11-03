@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -18,13 +17,10 @@ import android.view.ViewGroup;
 
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
-import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Toolbar;
 
 import com.example.new_list.R;
 import com.example.new_list.database.GlobalMethods;
@@ -32,8 +28,7 @@ import com.example.new_list.database.ItemAdapter;
 import com.example.new_list.helper.DataConverter;
 import com.example.new_list.model.GlobalList;
 import com.example.new_list.model.Item;
-
-import org.w3c.dom.Text;
+import com.example.new_list.model.Section;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,11 +48,11 @@ public class PrivateListFragment extends Fragment {
     private LinearLayout linearLayout;
     private GlobalList globalList;
     private GlobalMethods database;;
-    private ArrayList<ArrayList> lists;
-    private ArrayList<Button> listButtons;
-    private ArrayList<Item> listItems;
-    private ArrayList<ItemAdapter> listAdapter;
-    private ArrayList<RecyclerView> listView;
+    private ArrayList<ArrayList> arrayOfArrays;
+    private ArrayList<Button> arrayOfButtons;
+    private ArrayList<Item> arrayOfItems;
+    private ArrayList<ItemAdapter> arrayOfAdapters;
+    private ArrayList<RecyclerView> arrayOfRecycler;
     private ItemTouchHelper itemTouchHelper;
     private ItemTouchHelper.SimpleCallback simpleCallback;
     private Button tv_private_title;
@@ -95,12 +90,11 @@ public class PrivateListFragment extends Fragment {
         linearLayout = view.findViewById(R.id.linearLayoutListPrivate);
         database = new GlobalMethods(getContext());
         globalList = database.findById(requireArguments().getInt("globallist"));
-        lists = DataConverter.fromString(globalList.getLists());
-        mColumnCount = lists.size();
-        listButtons = new ArrayList<>();
-        listView = new ArrayList<>();
-        listAdapter = new ArrayList<>();
-        listItems= new ArrayList<>();
+        arrayOfArrays = DataConverter.fromString(globalList.getLists());
+        arrayOfButtons = new ArrayList<>();
+        arrayOfRecycler = new ArrayList<>();
+        arrayOfAdapters = new ArrayList<>();
+        mColumnCount = arrayOfArrays.size();
         System.out.println("Número de listas: " + mColumnCount);
         addButton = view.findViewById(R.id.addPrivateList);
 
@@ -115,37 +109,45 @@ public class PrivateListFragment extends Fragment {
         if (mColumnCount > 0) {
             System.out.println("--------- LISTAS ----------");
             for (int i = 0; i < mColumnCount; i++) {
-                String data = DataConverter.fromArrayListItem(lists.get(i));
-                ArrayList dataList = DataConverter.fromStringItem(data);
-                generateListView(dataList, i);
+                ArrayList<Section> individualArrayOfSection = DataConverter.changeSectionType(arrayOfArrays.get(i));
+                if (individualArrayOfSection.size() == 0) individualArrayOfSection.add(new Section("TEST", new ArrayList<>()));
+
+                    ArrayList<Item> individualArrayOfItem = DataConverter.changeItemType(individualArrayOfSection.get(i).getListOfItems());
+                    Section section = individualArrayOfSection.get(i);
+                    section.setListOfItems(individualArrayOfItem);
+                    generateListView(section, i);
             }
         }
-        System.out.println(listItems.size());
 
         return view;
     }
 
     // Actualiza los datos de la lista global en la base de datos
-    public void updateGlobalList(GlobalList globalList, ArrayList lists) {
-        globalList.setLists(DataConverter.fromArrayList(lists));
+    public void updateGlobalList() {
+        globalList.setLists(DataConverter.fromArrayList(arrayOfArrays));
         database.updateItem(globalList);
     }
 
     // Método que genera una lista desde cero
     public void generateNewListView() {
-        lists.add(new ArrayList());
-        int positionNew = lists.size() - 1;
+        arrayOfArrays.add(new ArrayList());
+        int positionNew = arrayOfArrays.size() - 1;
+        ArrayList<Section> individualArrayOfSections = DataConverter.changeSectionType(arrayOfArrays.get(positionNew));
+        individualArrayOfSections.add(new Section("TEST", new ArrayList<>()));
+        int positionSection = individualArrayOfSections.size() - 1;
+        Section section = individualArrayOfSections.get(positionSection);
         Toast.makeText(getActivity(),R.string.list_created,Toast.LENGTH_SHORT).show();
-        generateGlobalView(positionNew,lists.get(positionNew));
+        updateGlobalList();
+        generateGlobalView(positionSection, section);
     }
 
     // Método que genera las listas ya creadas
-    public void generateListView(ArrayList arrayIndividual, int pos) {
-        lists.set(pos, arrayIndividual);
-        generateGlobalView(pos, arrayIndividual);
+    public void generateListView(Section section , int pos) {
+        generateGlobalView(pos, section);
     }
 
-    public void generateGlobalView(int pos, ArrayList arrayIndividual) {
+    public void generateGlobalView(int pos, Section section) {
+        arrayOfItems = DataConverter.changeItemType(section.getListOfItems());
         ScrollView scrollView = new ScrollView(getActivity());
         tv_private_title = new Button(getActivity());
         tv_private_title.setOnClickListener(new View.OnClickListener() {
@@ -157,46 +159,46 @@ public class PrivateListFragment extends Fragment {
         tv_private_title.setText("TEST");
         tv_private_title.setBackgroundResource(R.drawable.button_title);
         LinearLayout linearLayoutPrivate = new LinearLayout(getActivity(), null, R.style.Theme_App_listas);
-        listView.add(new RecyclerView(getActivity()));
+        arrayOfRecycler.add(new RecyclerView(getActivity()));
 
-        listButtons.add(new Button(getActivity()));
-        int lastButton = listButtons.size()-1;
+        arrayOfButtons.add(new Button(getActivity()));
+        int lastButton = arrayOfButtons.size()-1;
 
         RelativeLayout.LayoutParams lpButtons = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         lpButtons.setMargins(10,0,20,0);
-        listButtons.get(lastButton).setId(countButton.incrementAndGet());
-        listButtons.get(lastButton).setLayoutParams(lpButtons);
-        listButtons.get(lastButton).setMinimumWidth(250);
-        listButtons.get(lastButton).setText(R.string.addItem);
-        listButtons.get(lastButton).setMinHeight(60);
-        listButtons.get(lastButton).setPadding(0,0,250,0);
-        listButtons.get(lastButton).setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_baseline_add_24,0,0,0);
+        arrayOfButtons.get(lastButton).setId(countButton.incrementAndGet());
+        arrayOfButtons.get(lastButton).setLayoutParams(lpButtons);
+        arrayOfButtons.get(lastButton).setMinimumWidth(250);
+        arrayOfButtons.get(lastButton).setText(R.string.addItem);
+        arrayOfButtons.get(lastButton).setMinHeight(60);
+        arrayOfButtons.get(lastButton).setPadding(0,0,250,0);
+        arrayOfButtons.get(lastButton).setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_baseline_add_24,0,0,0);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
-        listView.get(pos).setLayoutManager(layoutManager);
+        arrayOfRecycler.get(pos).setLayoutManager(layoutManager);
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        listView.get(pos).setLayoutParams(lp);
+        arrayOfRecycler.get(pos).setLayoutParams(lp);
 
         linearLayout.addView(scrollView);
         scrollView.addView(linearLayoutPrivate);
         linearLayoutPrivate.addView(tv_private_title);
-        linearLayoutPrivate.addView(listView.get(pos));
-        linearLayoutPrivate.addView(listButtons.get(lastButton));
+        linearLayoutPrivate.addView(arrayOfRecycler.get(pos));
+        linearLayoutPrivate.addView(arrayOfButtons.get(lastButton));
         linearLayoutPrivate.setOrientation(LinearLayout.VERTICAL);
-        listAdapter.add(new ItemAdapter(arrayIndividual, new ItemAdapter.OnItemClickListener() {
+        arrayOfAdapters.add(new ItemAdapter(arrayOfItems, new ItemAdapter.OnItemClickListener() {
             @SuppressLint("ResourceType")
             @Override
             public void onItemClick(Item item) {
-                showEditDialog(item, listAdapter.get(pos), lists.get(listButtons.get(pos).getId()-1));
+                showEditDialog(item, arrayOfAdapters.get(pos));
             }
         }));
 
-        listView.get(pos).setAdapter(listAdapter.get(pos));
+        arrayOfRecycler.get(pos).setAdapter(arrayOfAdapters.get(pos));
 
-        listButtons.get(lastButton).setOnClickListener(new View.OnClickListener() {
+        arrayOfButtons.get(lastButton).setOnClickListener(new View.OnClickListener() {
             @SuppressLint("ResourceType")
             @Override
             public void onClick(View v) {
-                showInputDialog(lists.get(listButtons.get(pos).getId()-1), listAdapter.get(pos));
+                showInputDialog(arrayOfArrays.get(arrayOfButtons.get(pos).getId()-1), arrayOfAdapters.get(pos));
             }
         });
 
@@ -205,9 +207,9 @@ public class PrivateListFragment extends Fragment {
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
                 int toPos = target.getBindingAdapterPosition();
                 int fromPos = viewHolder.getBindingAdapterPosition();
-                Collections.swap(lists.get(pos), fromPos, toPos);
-                listAdapter.get(pos).notifyItemMoved(fromPos,toPos);
-                updateGlobalList(globalList, lists);
+                Collections.swap(arrayOfArrays.get(pos), fromPos, toPos);
+                arrayOfAdapters.get(pos).notifyItemMoved(fromPos,toPos);
+                updateGlobalList();
                 return false;
             }
 
@@ -217,15 +219,15 @@ public class PrivateListFragment extends Fragment {
         };
 
         itemTouchHelper = new ItemTouchHelper(simpleCallback);
-        itemTouchHelper.attachToRecyclerView(listView.get(pos));
+        itemTouchHelper.attachToRecyclerView(arrayOfRecycler.get(pos));
 
-        updateGlobalList(globalList, lists);
+        updateGlobalList();
     }
 
-    public void addItem(Item item, ArrayList arrayList, ItemAdapter adapter) {
-        arrayList.add(item);
+    public void addItem(Item item, ItemAdapter adapter) {
+        arrayOfItems.add(item);
         adapter.notifyItemInserted(adapter.getItemCount());
-        updateGlobalList(globalList, lists);
+        updateGlobalList();
     }
 
     protected void showInputDialog(ArrayList arrayIndividual, ItemAdapter adapter) {
@@ -244,7 +246,7 @@ public class PrivateListFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (!editTextTitle.getText().toString().matches("")) {
-                    addItem(new Item(editTextTitle.getText().toString(), editTextDescription.getText().toString()), arrayIndividual, adapter);
+                    addItem(new Item(editTextTitle.getText().toString(), editTextDescription.getText().toString()),adapter);
                     alert.dismiss();
                 } else Toast.makeText(getActivity(),R.string.errorIntroduceTitle,Toast.LENGTH_LONG).show();
 
@@ -261,7 +263,7 @@ public class PrivateListFragment extends Fragment {
         alert.show();
     }
 
-    protected void showEditDialog(Item item, ItemAdapter adapter, ArrayList arrayList) {
+    protected void showEditDialog(Item item, ItemAdapter adapter) {
         LayoutInflater layoutInflater = LayoutInflater.from(this.getActivity());
         View promptView = layoutInflater.inflate(R.layout.fragment_edit_global_item, null);
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this.getActivity()).setTitle(R.string.dialogEditItem);
@@ -281,7 +283,7 @@ public class PrivateListFragment extends Fragment {
                 if (!editTextTitle.getText().toString().matches("")) {
                     item.setTitle(editTextTitle.getText().toString());
                     item.setDescription(editTextDescription.getText().toString());
-                    editItem(item, adapter, arrayList);
+                    editItem(item, adapter);
                     alert.dismiss();
                 } else Toast.makeText(getActivity(),R.string.errorIntroduceTitle,Toast.LENGTH_LONG).show();
 
@@ -291,7 +293,7 @@ public class PrivateListFragment extends Fragment {
         buttonDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                deleteItem(item, adapter, arrayList);
+                deleteItem(item, adapter);
                 alert.dismiss();
             }
         });
@@ -299,7 +301,7 @@ public class PrivateListFragment extends Fragment {
         buttonDuplicate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                duplicateItem(item, adapter, arrayList);
+                duplicateItem(item, adapter);
                 alert.dismiss();
             }
         });
@@ -332,8 +334,8 @@ public class PrivateListFragment extends Fragment {
         buttonDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                lists.remove(pos);
-                updateGlobalList(globalList,lists);
+                arrayOfArrays.remove(pos);
+                updateGlobalList();
                 Toast.makeText(getActivity(),R.string.list_deleted,Toast.LENGTH_LONG).show();
                 alert.dismiss();
             }
@@ -350,7 +352,7 @@ public class PrivateListFragment extends Fragment {
         alert.show();
     }
 
-    public void duplicateItem(Item item, ItemAdapter adapter, ArrayList arrayList) {
+    public void duplicateItem(Item item, ItemAdapter adapter) {
 
         Item itemDuplicated = new Item(item.getTitle(),item.getDescription());
 
@@ -360,20 +362,20 @@ public class PrivateListFragment extends Fragment {
             int number = Integer.parseInt(itemDuplicated.getTitle().substring(itemDuplicated.getTitle().length()-1)) + 1;
             itemDuplicated.setTitle(title+number);
         }
-        addItem(itemDuplicated, arrayList, adapter);
+        addItem(itemDuplicated, adapter);
     }
 
-    public void deleteItem(Item item, ItemAdapter adapter, ArrayList arrayList) {
-        adapter.notifyItemRemoved(arrayList.indexOf(item));
-        arrayList.remove(item);
-        updateGlobalList(globalList, lists);
+    public void deleteItem(Item item, ItemAdapter adapter) {
+        adapter.notifyItemRemoved(arrayOfItems.indexOf(item));
+        arrayOfItems.remove(item);
+        updateGlobalList();
         System.out.println("Removed item -> " + item);
     }
 
-    public void editItem(Item item, ItemAdapter adapter, ArrayList arrayList) {
-        adapter.notifyItemChanged(arrayList.indexOf(item));
-        arrayList.set(arrayList.indexOf(item),item);
-        updateGlobalList(globalList, lists);
+    public void editItem(Item item, ItemAdapter adapter) {
+        adapter.notifyItemChanged(arrayOfItems.indexOf(item));
+        arrayOfItems.set(arrayOfItems.indexOf(item),item);
+        updateGlobalList();
         System.out.println("Updated item -> " + item);
     }
 

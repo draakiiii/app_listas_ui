@@ -4,11 +4,13 @@ import androidx.room.TypeConverter;
 
 import com.example.new_list.model.GlobalList;
 import com.example.new_list.model.Item;
+import com.example.new_list.model.Section;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +43,28 @@ public class DataConverter implements Serializable {
         Type listType = new TypeToken<ArrayList<Item>>() {}.getType();
         String json = gson.toJson(list, listType);
         return json;
+    }
+
+    @TypeConverter
+    public static ArrayList<Section> fromStringSection(String value) {
+        Type listType = new TypeToken<ArrayList<Section>>() {}.getType();
+        return new Gson().fromJson(value, listType);
+    }
+
+    @TypeConverter
+    public static String fromArrayListSection(ArrayList<Section> list) {
+        Gson gson = new Gson();
+        Type listType = new TypeToken<ArrayList<Section>>() {}.getType();
+        String json = gson.toJson(list, listType);
+        return json;
+    }
+
+    public static ArrayList<Item> changeItemType (ArrayList<Item> list) {
+        return fromStringItem(fromArrayListItem(list));
+    }
+
+    public static ArrayList<Section> changeSectionType (ArrayList<Section> list) {
+        return fromStringSection(fromArrayListSection(list));
     }
 
 
