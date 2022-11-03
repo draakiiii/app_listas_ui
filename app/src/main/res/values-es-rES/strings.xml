@@ -16,9 +16,16 @@
     <string name="nav_close">Cerrar</string>
     <string name="addGlobalList">Introduce un nombre</string>
     <string name="addPrivateList">añadir nueva sección</string>
-    <string name="errorIntroduceTitle">No has introducido un título</string>
+    <string name="errorIntroduceTitle">Debes introducir un nombre.</string>
     <string name="duplicate">duplicar</string>
     <string name="dialogEditItem">Editar entrada</string>
     <string name="dialogAddItem">Añadir nueva entrada</string>
     <string name="settings">Configuración</string>
+    <string name="confirm_delete">Esto eliminará de forma permanente la lista.</string>
+    <string name="title_delete_list">¿Eliminar lista?</string>
+    <string name="list_deleted">Lista borrada</string>
+    <string name="list_created">Lista creada</string>
+    <string name="title_create_list">Crear lista</string>
+    <string name="errorIntroduceName">Debes introducir un nombre.</string>
+    <string name="edit_section">Editar sección</string>
 </resources>

@@ -17,9 +17,16 @@
     <string name="addGlobalList">Introduce a name</string>
     <string name="next">next</string>
     <string name="addPrivateList">add new section</string>
-    <string name="errorIntroduceTitle">You did not enter a title</string>
+    <string name="errorIntroduceTitle">You must enter a name</string>
     <string name="duplicate">duplicate</string>
     <string name="dialogEditItem">Edit item</string>
     <string name="dialogAddItem">Add item</string>
     <string name="settings">Settings</string>
+    <string name="confirm_delete">This will permanently delete the list.</string>
+    <string name="title_delete_list">¿Delete list?</string>
+    <string name="list_deleted">List deleted</string>
+    <string name="list_created">List created</string>
+    <string name="title_create_list">Create list</string>
+    <string name="errorIntroduceName">You must introduce a name.</string>
+    <string name="edit_section">Edit section</string>
 </resources>
