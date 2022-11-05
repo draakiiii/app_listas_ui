@@ -25,7 +25,7 @@ public class Section {
     @NonNull
     public String title;
 
-    @ColumnInfo(name = "description")
+    @ColumnInfo(name = "listOfItems")
     public ArrayList<Item> listOfItems;
 
     public Section(String title, ArrayList<Item> listOfItems) {

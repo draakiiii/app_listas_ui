@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">App listas | draakiiii</string>
+    <string name="app_name">The Archive</string>
     <string name="navigation_drawer_open">abrir</string>
     <string name="navigation_drawer_close">cerrar</string>
     <string name="edit">Editar</string>
@@ -16,7 +16,7 @@
     <string name="nav_close">Cerrar</string>
     <string name="addGlobalList">Introduce un nombre</string>
     <string name="addPrivateList">añadir nueva sección</string>
-    <string name="errorIntroduceTitle">Debes introducir un nombre.</string>
+    <string name="errorIntroduceTitle">Debes introducir un nombre nuevo.</string>
     <string name="duplicate">duplicar</string>
     <string name="dialogEditItem">Editar entrada</string>
     <string name="dialogAddItem">Añadir nueva entrada</string>
@@ -28,4 +28,6 @@
     <string name="title_create_list">Crear lista</string>
     <string name="errorIntroduceName">Debes introducir un nombre.</string>
     <string name="edit_section">Editar sección</string>
+    <string name="section_name_changed">Nombre de la sección cambiado</string>
+    <string name="section_duplicated">Sección duplicada</string>
 </resources>

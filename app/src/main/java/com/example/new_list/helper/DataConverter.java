@@ -59,12 +59,20 @@ public class DataConverter implements Serializable {
         return json;
     }
 
+    @TypeConverter
     public static ArrayList<Item> changeItemType (ArrayList<Item> list) {
         return fromStringItem(fromArrayListItem(list));
     }
 
+    @TypeConverter
     public static ArrayList<Section> changeSectionType (ArrayList<Section> list) {
         return fromStringSection(fromArrayListSection(list));
+    }
+
+
+    public static ArrayList<Item> globalToItem(ArrayList<Section> arraySection, int pos) {
+        arraySection = changeSectionType(arraySection);
+        return changeItemType(arraySection.get(pos).getListOfItems());
     }
 
 

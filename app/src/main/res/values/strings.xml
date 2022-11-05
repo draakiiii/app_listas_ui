@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">App listas | draakiiii</string>
+    <string name="app_name">The Archive</string>
     <!-- to toggle the open close button of the navigation drawer -->
     <string name="nav_open">Open</string>
     <string name="nav_close">Close</string>
@@ -17,7 +17,7 @@
     <string name="addGlobalList">Introduce a name</string>
     <string name="next">next</string>
     <string name="addPrivateList">add new section</string>
-    <string name="errorIntroduceTitle">You must enter a name</string>
+    <string name="errorIntroduceTitle">You must enter a new name.</string>
     <string name="duplicate">duplicate</string>
     <string name="dialogEditItem">Edit item</string>
     <string name="dialogAddItem">Add item</string>
@@ -29,4 +29,6 @@
     <string name="title_create_list">Create list</string>
     <string name="errorIntroduceName">You must introduce a name.</string>
     <string name="edit_section">Edit section</string>
+    <string name="section_name_changed">Section name changed</string>
+    <string name="section_duplicated">Section duplicated</string>
 </resources>
