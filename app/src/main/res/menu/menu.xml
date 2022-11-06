@@ -7,25 +7,25 @@
 
     <item
         android:id="@+id/nav_main"
-        android:title="Main"
+        android:title="@string/main_screen"
         android:icon="@drawable/ic_baseline_dvr_24"/>
     <item
         android:id="@+id/nav_settings"
-        android:title="Settings"
+        android:title="@string/settings"
         android:icon="@drawable/ic_baseline_settings_24"/>
-    <item
-        android:id="@+id/nav_theme"
-        android:title="Switch theme"
-        android:icon="@drawable/ic_baseline_dark_mode_24"/>
+<!--    <item-->
+<!--        android:id="@+id/nav_theme"-->
+<!--        android:title="Switch theme"-->
+<!--        android:icon="@drawable/ic_baseline_dark_mode_24"/>-->
     <item android:title="Lists" android:id="@+id/lists">
         <menu>
             <item
                 android:id="@+id/nav_add"
-                android:title="Add new list"
+                android:title="@string/create_global_list"
                 android:icon="@drawable/ic_baseline_add_24"/>
             <item
                 android:id="@+id/nav_create_folder"
-                android:title="Create folder - WIP"
+                android:title="@string/create_folder"
                 android:icon="@drawable/ic_baseline_create_new_folder_24"/>
         </menu>
     </item>

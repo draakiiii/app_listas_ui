@@ -40,10 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
     public NavigationView navigationView;
     private GlobalMethods database;
-    private Menu menu;
-    private Menu menuPrivate;
     private ArrayList<GlobalList> arrayLists;
-    private static AtomicInteger countButtonFolder;
 
     // Make sure to be using androidx.appcompat.app.ActionBarDrawerToggle version.
     private ActionBarDrawerToggle drawerToggle;
@@ -66,7 +63,6 @@ public class MainActivity extends AppCompatActivity {
         navigationView = (NavigationView) findViewById(R.id.nvView);
         arrayLists = (ArrayList<GlobalList>) database.getItems();
 
-        countButtonFolder = new AtomicInteger(0);
         // Setup drawer view
         setupDrawerContent(navigationView);
         openMainView();
@@ -109,10 +105,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void selectDrawerItem(MenuItem menuItem) {
         // Create a new fragment and specify the fragment to show based on nav item clicked
-        Fragment fragment = null;
-        Class fragmentClass;
         switch(menuItem.getItemId()) {
             case R.id.nav_settings:
+                clearGlobalListMenu();
                 setTitle(R.string.settings);
                 mDrawer.close();
                 getSupportFragmentManager().beginTransaction()
@@ -120,43 +115,15 @@ public class MainActivity extends AppCompatActivity {
                         .replace(R.id.flContent, SettingsFragment.class,null)
                         .commit();
                 break;
-            case R.id.nav_theme:
-                int nightModeFlags = getResources().getConfiguration().uiMode &
-                        Configuration.UI_MODE_NIGHT_MASK;
-                switch (nightModeFlags) {
-                    case Configuration.UI_MODE_NIGHT_YES:
-                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                        break;
-                    case Configuration.UI_MODE_NIGHT_NO:
-                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);;
-                        break;
-                }
-                mDrawer.close();
-                break;
             case R.id.nav_add:
                 addGlobalListDialog();
                 break;
             case R.id.nav_main:
+                clearGlobalListMenu();
                 openMainView();
                 break;
             case R.id.nav_create_folder:
-                ArrayList<ArrayList> arrayOfArrays = new ArrayList<>();
-                ArrayList<Item> listItems = new ArrayList<>();
-                ArrayList<Section> listColumns = new ArrayList<>();
-                String name = "Nombre de la sección";
-                Section columns = new Section(name, listItems);
-                listColumns.add(columns);
-                arrayOfArrays.add(listColumns);
-                listItems.add(new Item("Nombre de item", "Descripcion"));
-                GlobalList globalList = new GlobalList("Nombre de la lista global",DataConverter.fromArrayList(arrayOfArrays));
-                System.out.println("Lista global --> " + globalList);
-                ArrayList<ArrayList> arrayOfArrays2 = DataConverter.fromString(globalList.getLists());
-                System.out.println("Lista de secciones --> " + arrayOfArrays2.get(0));
-                System.out.println("Lista de Items --> " + arrayOfArrays2.get(0).get(0));
-                ArrayList<Section> sectionArrayList2 = DataConverter.changeSectionType(arrayOfArrays2.get(0));
-                System.out.println("Nombre de lista --> " + sectionArrayList2.get(0).getTitle());
-                ArrayList<Item> itemArrayList2 = DataConverter.changeItemType(sectionArrayList2.get(0).getListOfItems());
-                System.out.println("Item 1 --> " + itemArrayList2.get(0).getTitle());
+                Toast.makeText(getBaseContext(), R.string.unavailable, Toast.LENGTH_SHORT).show();
             default:
                 System.out.println("Default.");
         }
@@ -223,6 +190,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    public void clearGlobalListMenu() {
+        toolbar.getMenu().clear();
+    }
+
     // Método que lanza un diálogo para confirmar la eliminación de la lista global
     protected void deleteGlobalListConfirmDialog(GlobalList globalList) {
         LayoutInflater layoutInflater = LayoutInflater.from(this);
@@ -242,6 +213,7 @@ public class MainActivity extends AppCompatActivity {
                 database.deleteItem(globalList.getId());
                 navigationView.getMenu().removeItem(globalList.getId());
                 openMainView();
+                clearGlobalListMenu();
                 alert.dismiss();
                 Toast.makeText(getApplicationContext(),R.string.list_deleted,Toast.LENGTH_LONG).show();
 

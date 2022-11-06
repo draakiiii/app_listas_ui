@@ -30,4 +30,16 @@
     <string name="edit_section">Editar sección</string>
     <string name="section_name_changed">Nombre de la sección cambiado</string>
     <string name="section_duplicated">Sección duplicada</string>
+    <string name="unavailable">Temporalmente no disponible</string>
+    <string name="change_theme">Cambiar modo</string>
+    <string name="delete_all">Borrar todas las listas</string>
+    <string name="must_close_app">Los cambios se harán efectivos cuando reinicies la aplicación.</string>
+    <string name="main_screen">Pantalla principal</string>
+    <string name="create_global_list">Añadir nueva lista</string>
+    <string name="create_folder">Crear carpeta - WIP</string>
+    <string name="stats">Estadísticas - WIP</string>
+    <string name="welcome">Bienvenido a The Archive</string>
+    <string name="set_date">Fecha de inicio</string>
+    <string name="set_end_date">Fecha de fin</string>
+    <string name="error">Ha ocurrido un error.</string>
 </resources>

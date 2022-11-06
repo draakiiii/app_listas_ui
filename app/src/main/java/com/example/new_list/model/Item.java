@@ -5,33 +5,34 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import java.time.LocalDate;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import lombok.NonNull;
 
-@Entity
 public class Item {
 
     // Contador autoincremental
     @Ignore
     private static final AtomicInteger count = new AtomicInteger(0);
 
-    @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "id")
     public int id;
 
-    @ColumnInfo(name = "title")
-    @NonNull
     public String title;
 
-    @ColumnInfo(name = "description")
     public String description;
 
+    public String dateStart;
 
-    public Item(String title, String description) {
+    public String dateEnd;
+
+
+    public Item(String title, String description, String dateStart, String dateEnd) {
         this.id = count.incrementAndGet();
         this.title = title;
         this.description = description;
+        this.dateStart = dateStart;
+        this.dateEnd = dateEnd;
     }
 
     public int getId() {
@@ -53,6 +54,22 @@ public class Item {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getDateStart() {
+        return dateStart;
+    }
+
+    public void setDateStart(String dateStart) {
+        this.dateStart = dateStart;
+    }
+
+    public String getDateEnd() {
+        return dateEnd;
+    }
+
+    public void setDateEnd(String dateEnd) {
+        this.dateEnd = dateEnd;
     }
 
     @Override

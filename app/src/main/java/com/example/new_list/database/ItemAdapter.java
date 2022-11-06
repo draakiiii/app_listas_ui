@@ -10,6 +10,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.new_list.R;
 import com.example.new_list.model.Item;
 
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
@@ -41,22 +44,67 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
 
     static class ViewHolder extends RecyclerView.ViewHolder {
 
-        private TextView title, description;
+        private TextView title, description, date;
 
         public ViewHolder(View itemView) {
             super(itemView);
             title = (TextView) itemView.findViewById(R.id.tvTitle);
             description = (TextView) itemView.findViewById(R.id.tvDescription);
+            date = (TextView) itemView.findViewById(R.id.tvDate);
         }
 
         public void bind(final Item item, final OnItemClickListener listener) {
-            title.setText(item.title);
-            description.setText(item.description);
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override public void onClick(View v) {
-                    listener.onItemClick(item);
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+                LocalDate date1 = null;
+                LocalDate date2 = null;
+
+                if (!item.dateStart.matches("") && item.dateEnd.matches("")) {
+                    date1 = LocalDate.parse(item.dateStart, formatter);
+                    Month date1Month = date1.getMonth().plus(1);
+                    int date1Day = date1.getDayOfMonth();
+                    int date1Year = date1.getYear();
+                    LocalDate date1Format = LocalDate.of(date1Year,date1Month,date1Day);
+                    date.setText(date1Format.format(formatter));
                 }
-            });
+                if (!item.dateEnd.matches("") && item.dateStart.matches("")) {
+                    date2 = LocalDate.parse(item.dateEnd, formatter);
+                    Month date2Month = date2.getMonth().plus(1);
+                    int date2Day = date2.getDayOfMonth();
+                    int date2Year = date2.getYear();
+                    LocalDate date2Format = LocalDate.of(date2Year,date2Month,date2Day);
+                    date.setText(date2Format.format(formatter));
+                }
+                if (!item.dateStart.matches("") && !item.dateEnd.matches("")) {
+                    date1 = LocalDate.parse(item.dateStart, formatter);
+                    Month date1Month = date1.getMonth().plus(1);
+                    int date1Day = date1.getDayOfMonth();
+                    int date1Year = date1.getYear();
+                    LocalDate date1Format = LocalDate.of(date1Year,date1Month,date1Day);
+                    date2 = LocalDate.parse(item.dateEnd, formatter);
+                    Month date2Month = date2.getMonth().plus(1);
+                    int date2Day = date2.getDayOfMonth();
+                    int date2Year = date2.getYear();
+                    LocalDate date2Format = LocalDate.of(date2Year,date2Month,date2Day);
+                    date.setText(date1Format.format(formatter) + " - " + date2Format.format(formatter));
+                }
+
+                if (item.dateStart.matches("") && item.dateEnd.matches("")) date.setVisibility(View.GONE);
+
+                title.setText(item.title);
+                if (!item.description.matches("")) description.setText(item.description);
+                else description.setVisibility(View.GONE);
+
+
+                itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override public void onClick(View v) {
+                        listener.onItemClick(item);
+                    }
+                });
+            } catch (Exception e) {
+                System.out.println(e.getLocalizedMessage());
+            }
         }
     }
 }

@@ -43,13 +43,13 @@
             android:text="@string/confirm"
             android:background="@drawable/custom_button"/>
 
-        <Button
-            android:id="@+id/buttonDuplicateSection"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:text="@string/duplicate"
-            android:background="@drawable/custom_button"/>
+<!--        <Button-->
+<!--            android:id="@+id/buttonDuplicateSection"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_margin="5dp"-->
+<!--            android:text="@string/duplicate"-->
+<!--            android:background="@drawable/custom_button"/>-->
 
 
     </LinearLayout>

@@ -31,4 +31,16 @@
     <string name="edit_section">Edit section</string>
     <string name="section_name_changed">Section name changed</string>
     <string name="section_duplicated">Section duplicated</string>
+    <string name="unavailable">Temporary unavailable</string>
+    <string name="change_theme">Switch theme</string>
+    <string name="delete_all">Delete all lists</string>
+    <string name="must_close_app">The changes will take effect when you restart the app.</string>
+    <string name="main_screen">Main screen</string>
+    <string name="create_global_list">Add new list</string>
+    <string name="create_folder">Create folder - WIP</string>
+    <string name="stats">Stats - WIP</string>
+    <string name="welcome">Welcome to The Archive</string>
+    <string name="set_date">Start date</string>
+    <string name="set_end_date">End date</string>
+    <string name="error">An error has occurred.</string>
 </resources>
