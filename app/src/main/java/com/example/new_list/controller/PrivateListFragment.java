@@ -116,6 +116,8 @@ public class PrivateListFragment extends Fragment{
             arrayOfRecycler = new ArrayList<>();
             arrayOfAdapters = new ArrayList<>();
             mColumnCount = arrayOfArrays.size();
+            inputDateString2 = "";
+            inputDateString = "";
             System.out.println("Número de listas: " + mColumnCount);
 
             addButton = view.findViewById(R.id.addPrivateList);
@@ -335,6 +337,8 @@ public class PrivateListFragment extends Fragment{
                     if (!editTextTitle.getText().toString().matches("")) {
                         addItem(new Item(editTextTitle.getText().toString(), editTextDescription.getText().toString(),inputDateString  , inputDateString2), arrayIndividual, adapter, pos);
                         alert.dismiss();
+                        inputDateString = "";
+                        inputDateString2 = "";
                     } else Toast.makeText(getActivity(),R.string.errorIntroduceTitle,Toast.LENGTH_SHORT).show();
 
                 }
@@ -346,8 +350,6 @@ public class PrivateListFragment extends Fragment{
                     alert.dismiss();
                 }
             });
-            inputDateString = "";
-            inputDateString2 = "";
             alert.show();
         } catch (Exception e) {
             Toast.makeText(getActivity(),R.string.error,Toast.LENGTH_SHORT).show();
@@ -381,6 +383,15 @@ public class PrivateListFragment extends Fragment{
                 int date1Year = tempDate1.getYear();
                 LocalDate date1Format = LocalDate.of(date1Year,date1Month,date1Day);
                 inputDate.setText(date1Format.format(formatter));
+
+                date1Month = date1Month.minus(1);
+                if (date1Day > 9 && date1Month.getValue() > 9) {
+                    inputDateString = (date1Day + "/" + date1Month.getValue() + "/" + date1Year);
+                } else if (date1Day < 10 && date1Month.getValue() > 9) {
+                    inputDateString = ("0" + date1Day + "/" + date1Month.getValue() + "/" + date1Year);
+                } else if (date1Day < 10 && date1Month.getValue() < 10) {
+                    inputDateString = ("0" + date1Day + "/" + "0" + date1Month.getValue() + "/" + date1Year);
+                }
             }
 
             if (!item.dateEnd.matches("")) {
@@ -390,6 +401,15 @@ public class PrivateListFragment extends Fragment{
                 int date2Year = tempDate2.getYear();
                 LocalDate date2Format = LocalDate.of(date2Year,date2Month,date2Day);
                 inputDate2.setText(date2Format.format(formatter));
+
+                date2Month = date2Month.minus(1);
+                if (date2Day > 9 && date2Month.getValue() > 9) {
+                    inputDateString2 = (date2Day + "/" + date2Month.getValue() + "/" + date2Year);
+                } else if (date2Day < 10 && date2Month.getValue() > 9) {
+                    inputDateString2 = ("0" + date2Day + "/" + date2Month.getValue() + "/" + date2Year);
+                } else if (date2Day < 10 && date2Month.getValue() < 10) {
+                    inputDateString2 = ("0" + date2Day + "/" + "0" + date2Month.getValue() + "/" + date2Year);
+                }
             }
 
             LocalDate date1 = LocalDate.now();
@@ -457,14 +477,20 @@ public class PrivateListFragment extends Fragment{
             buttonConfirm.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (!editTextTitle.getText().toString().matches("")) {
-                        item.setTitle(editTextTitle.getText().toString());
-                        item.setDescription(editTextDescription.getText().toString());
-                        item.setDateStart(inputDateString);
-                        item.setDateEnd(inputDateString2);
-                        editItem(item, adapter, listOfItems, pos);
-                        alert.dismiss();
-                    } else Toast.makeText(getActivity(),R.string.errorIntroduceTitle,Toast.LENGTH_SHORT).show();
+                    try {
+                        if (!editTextTitle.getText().toString().matches("")) {
+                            item.setTitle(editTextTitle.getText().toString());
+                            item.setDescription(editTextDescription.getText().toString());
+                            item.setDateStart(inputDateString);
+                            item.setDateEnd(inputDateString2);
+                            editItem(item, adapter, listOfItems, pos);
+                            alert.dismiss();
+                            inputDateString = "";
+                            inputDateString2 = "";
+                        } else Toast.makeText(getActivity(),R.string.errorIntroduceTitle,Toast.LENGTH_SHORT).show();
+                    } catch (Exception e) {
+                        Toast.makeText(getActivity(),R.string.error,Toast.LENGTH_SHORT).show();
+                    }
 
                 }
             });
@@ -473,6 +499,8 @@ public class PrivateListFragment extends Fragment{
                 @Override
                 public void onClick(View v) {
                     deleteItem(item, adapter, listOfItems, pos);
+                    inputDateString = "";
+                    inputDateString2 = "";
                     alert.dismiss();
                 }
             });
@@ -481,11 +509,11 @@ public class PrivateListFragment extends Fragment{
                 @Override
                 public void onClick(View v) {
                     duplicateItem(item, adapter, listOfItems, pos);
+                    inputDateString = "";
+                    inputDateString2 = "";
                     alert.dismiss();
                 }
             });
-            inputDateString = "";
-            inputDateString2 = "";
             alert.show();
         } catch (Exception e) {
             Toast.makeText(getActivity(),R.string.error,Toast.LENGTH_SHORT).show();

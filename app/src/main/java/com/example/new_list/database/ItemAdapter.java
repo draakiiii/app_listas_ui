@@ -91,9 +91,13 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
                 }
 
                 if (item.dateStart.matches("") && item.dateEnd.matches("")) date.setVisibility(View.GONE);
+                else date.setVisibility(View.VISIBLE);
 
                 title.setText(item.title);
-                if (!item.description.matches("")) description.setText(item.description);
+                if (!item.description.matches("")) {
+                    description.setText(item.description);
+                    description.setVisibility(View.VISIBLE);
+                }
                 else description.setVisibility(View.GONE);
 
 
