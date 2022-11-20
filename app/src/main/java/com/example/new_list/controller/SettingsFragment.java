@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -40,7 +41,7 @@ public class SettingsFragment extends Fragment {
         mainActivity = new MainActivity();
         navigationView = view.findViewById(R.id.nvView);
 
-        Button changeTheme = view.findViewById(R.id.btn_theme);
+        TextView changeTheme = view.findViewById(R.id.btn_theme);
         changeTheme.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -57,7 +58,7 @@ public class SettingsFragment extends Fragment {
             }
         });
 
-        Button deleteAll = view.findViewById(R.id.btn_delete_all);
+        TextView deleteAll = view.findViewById(R.id.btn_delete_all);
         deleteAll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -3,6 +3,7 @@ package com.example.new_list.controller;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -26,6 +27,7 @@ import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.new_list.R;
@@ -36,6 +38,8 @@ import com.example.new_list.model.GlobalList;
 import com.example.new_list.model.Item;
 import com.example.new_list.model.Section;
 import com.google.android.material.datepicker.MaterialDatePicker;
+
+import org.w3c.dom.Text;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -61,6 +65,7 @@ public class PrivateListFragment extends Fragment{
     private GlobalMethods database;
     private ArrayList<Section> arrayOfArrays;
     private ArrayList<Button> arrayOfButtons;
+    private ArrayList<TextView> arrayOfCounts;
     private ArrayList<ItemAdapter> arrayOfAdapters;
     private ArrayList<RecyclerView> arrayOfRecycler;
     private ItemTouchHelper itemTouchHelper;
@@ -72,6 +77,7 @@ public class PrivateListFragment extends Fragment{
     private int width;
     private int toPos;
     private int fromPos;
+    private HorizontalScrollView horizontalScrollView;
 
     public PrivateListFragment() {
     }
@@ -93,7 +99,6 @@ public class PrivateListFragment extends Fragment{
         }
     }
 
-    @SuppressLint("MissingInflatedId")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_private_list_list, container, false);
@@ -106,13 +111,14 @@ public class PrivateListFragment extends Fragment{
             getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
             height = displayMetrics.heightPixels;
             width = displayMetrics.widthPixels;
-            width = (width / 100) * 85;
+            width = (width / 100) * 90;
             mDrawer = (DrawerLayout) getActivity().findViewById(R.id.drawer_layout);
             linearLayout = view.findViewById(R.id.linearLayoutListPrivate);
             database = new GlobalMethods(getContext());
             globalList = database.findById(requireArguments().getInt("globallist"));
             arrayOfArrays = DataConverter.fromStringSection(globalList.getLists());
             arrayOfButtons = new ArrayList<>();
+            arrayOfCounts = new ArrayList<>();
             arrayOfRecycler = new ArrayList<>();
             arrayOfAdapters = new ArrayList<>();
             mColumnCount = arrayOfArrays.size();
@@ -171,6 +177,9 @@ public class PrivateListFragment extends Fragment{
 
     public void generateGlobalView(int pos, ArrayList<Item> arrayIndividual, String title) {
         try {
+            LinearLayout linearTitle = new LinearLayout(getActivity(), null, R.style.LinearLayoutMargin);
+            linearTitle.setPadding(15,0,0,0);
+            linearTitle.setOrientation(LinearLayout.HORIZONTAL);
             ScrollView scrollView = new ScrollView(getActivity());
             Button tv_private_title = new Button(getActivity());
             tv_private_title.setOnClickListener(new View.OnClickListener() {
@@ -181,11 +190,13 @@ public class PrivateListFragment extends Fragment{
             });
             tv_private_title.setText(title);
             tv_private_title.setBackgroundResource(R.drawable.button_title);
-            LinearLayout linearLayoutPrivate = new LinearLayout(getActivity(), null, R.style.Theme_App_listas);
+            tv_private_title.setTextSize(20);
+            LinearLayout linearLayoutPrivate = new LinearLayout(getActivity(), null, R.style.LinearLayoutMargin);
             linearLayoutPrivate.setMinimumWidth(width);
             arrayOfRecycler.add(new RecyclerView(getActivity()));
 
             arrayOfButtons.add(new Button(getActivity()));
+            arrayOfCounts.add(new TextView(getActivity()));
             int lastButton = arrayOfButtons.size()-1;
 
             RelativeLayout.LayoutParams lpButtons = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
@@ -201,13 +212,17 @@ public class PrivateListFragment extends Fragment{
             RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(width, LinearLayout.LayoutParams.WRAP_CONTENT);
             arrayOfRecycler.get(lastButton).setLayoutParams(lp);
 
-
             linearLayout.addView(scrollView);
+            linearLayoutPrivate.addView(linearTitle);
+            linearTitle.addView(tv_private_title);
+            linearTitle.addView(arrayOfCounts.get(pos));
             scrollView.addView(linearLayoutPrivate);
-            linearLayoutPrivate.addView(tv_private_title);
             linearLayoutPrivate.addView(arrayOfRecycler.get(lastButton));
             linearLayoutPrivate.addView(arrayOfButtons.get(lastButton));
             linearLayoutPrivate.setOrientation(LinearLayout.VERTICAL);
+
+            arrayOfCounts.get(pos).setText(String.valueOf(arrayIndividual.size()));
+            arrayOfCounts.get(pos).setTextSize(15);
 
             arrayOfAdapters.add(new ItemAdapter(arrayIndividual, new ItemAdapter.OnItemClickListener() {
                 @SuppressLint("ResourceType")
@@ -227,7 +242,7 @@ public class PrivateListFragment extends Fragment{
                 }
             });
 
-            simpleCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN , 0) {
+            simpleCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN | ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT , 0) {
                 @Override
                 public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
                     int toPos = target.getBindingAdapterPosition();
@@ -242,21 +257,26 @@ public class PrivateListFragment extends Fragment{
                 public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 }
             };
-
             itemTouchHelper = new ItemTouchHelper(simpleCallback);
             itemTouchHelper.attachToRecyclerView(arrayOfRecycler.get(lastButton));
             updateGlobalList(pos, arrayIndividual);
         } catch (Exception e) {
             Toast.makeText(getActivity(),R.string.error,Toast.LENGTH_SHORT).show();
+            deleteItem(arrayIndividual.get(pos), arrayOfAdapters.get(pos), arrayIndividual, pos);
         }
+
     }
 
+    public void countItemsToTitle(int pos, ArrayList arrayIndividual) {
+        arrayOfCounts.get(pos).setText(String.valueOf(arrayIndividual.size()));
+    }
 
     public void addItem(Item item, ArrayList arrayIndividual, ItemAdapter adapter, int pos) {
         try {
             arrayIndividual.add(item);
             adapter.notifyItemInserted(adapter.getItemCount());
             updateGlobalList(pos, arrayIndividual);
+            countItemsToTitle(pos, arrayIndividual);
         } catch (Exception e) {
             Toast.makeText(getActivity(),R.string.error,Toast.LENGTH_SHORT).show();
         }
@@ -301,6 +321,13 @@ public class PrivateListFragment extends Fragment{
                                     }
                                 }
                             }, mYear, mMonth, mDay);
+                    mDatePicker.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                            inputDate.setText("");
+                            inputDateString = "";
+                        }
+                    });
                     mDatePicker.show();
                 }
             });
@@ -326,6 +353,13 @@ public class PrivateListFragment extends Fragment{
                                     }
                                 }
                             }, mYear, mMonth, mDay);
+                    mDatePicker.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                            inputDate2.setText("");
+                            inputDateString2 = "";
+                        }
+                    });
                     mDatePicker.show();
                 }
             });
@@ -442,7 +476,14 @@ public class PrivateListFragment extends Fragment{
                                     }
                                 }
                             }, dateStart.getYear(), dateStart.getMonthValue(), dateStart.getDayOfMonth());
+                    mDatePicker.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                            inputDateString = "";
+                            inputDate.setText("");
 
+                        }
+                    });
                     mDatePicker.show();
                 }
             });
@@ -468,6 +509,13 @@ public class PrivateListFragment extends Fragment{
                                     }
                                 }
                             }, dateEnd.getYear(), dateEnd.getMonthValue(), dateEnd.getDayOfMonth());
+                    mDatePicker.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                            inputDateString2 = "";
+                            inputDate2.setText("");
+                        }
+                    });
                     mDatePicker.show();
                 }
             });
@@ -487,6 +535,7 @@ public class PrivateListFragment extends Fragment{
                             alert.dismiss();
                             inputDateString = "";
                             inputDateString2 = "";
+
                         } else Toast.makeText(getActivity(),R.string.errorIntroduceTitle,Toast.LENGTH_SHORT).show();
                     } catch (Exception e) {
                         Toast.makeText(getActivity(),R.string.error,Toast.LENGTH_SHORT).show();
@@ -599,7 +648,7 @@ public class PrivateListFragment extends Fragment{
             list.remove(item);
             updateGlobalList(pos, list);
             System.out.println("Removed item -> " + item);
-
+            countItemsToTitle(pos, list);
         } catch (Exception e) {
             Toast.makeText(getActivity(),R.string.error,Toast.LENGTH_SHORT).show();
         }

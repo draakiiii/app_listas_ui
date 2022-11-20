@@ -2,19 +2,17 @@
     <!-- Base application theme. -->
     <style name="Theme.App_listas" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/darkGrey</item>
-        <item name="colorPrimaryVariant">@color/grey </item>
+        <item name="colorPrimary">@color/darkGrey</item> <!-- Barra superior y color botones -->
+        <item name="colorPrimaryVariant">@color/darkGreyv2</item> <!-- Contenido items y menús flotantes -->
         <item name="colorOnPrimary">@color/white</item>
-        <item name ="colorOnPrimaryContainer">@color/grey</item>
         <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/darkWhite</item>
-        <item name="colorSecondaryVariant">@color/teal_200</item>
-        <item name="colorOnSecondary">@color/pink_200</item>
+        <item name="colorSecondary">@color/lightGrey</item> <!-- Valores secundarios item -->
         <!-- Status bar color. -->
-        <item name="android:statusBarColor">?attr/colorPrimary</item>
-        <item name="homeAsUpIndicator">@color/white</item>
+        <item name="android:statusBarColor">@color/darkGrey</item> <!-- Barra superior de estado Android -->
         <!-- Customize your theme here. -->
-        <item name="backgroundColor">@color/darkGrey</item>
         <item name="android:buttonStyle">@style/Widget.MaterialComponents.Button</item>
+    </style>
+    <style name="LinearLayoutMargin" parent="Theme.App_listas">
+        <item name="android:paddingLeft">100dp</item>
     </style>
 </resources>

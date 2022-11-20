@@ -59,6 +59,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
 
                 LocalDate date1 = null;
                 LocalDate date2 = null;
+                description.setVisibility(View.VISIBLE);
 
                 if (!item.dateStart.matches("") && item.dateEnd.matches("")) {
                     date1 = LocalDate.parse(item.dateStart, formatter);
