@@ -63,15 +63,16 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
 
                 if (!item.dateStart.matches("") && item.dateEnd.matches("")) {
                     date1 = LocalDate.parse(item.dateStart, formatter);
-                    Month date1Month = date1.getMonth().plus(1);
+                    Month date1Month = date1.getMonth();
                     int date1Day = date1.getDayOfMonth();
                     int date1Year = date1.getYear();
                     LocalDate date1Format = LocalDate.of(date1Year,date1Month,date1Day);
                     date.setText(date1Format.format(formatter));
                 }
+
                 if (!item.dateEnd.matches("") && item.dateStart.matches("")) {
                     date2 = LocalDate.parse(item.dateEnd, formatter);
-                    Month date2Month = date2.getMonth().plus(1);
+                    Month date2Month = date2.getMonth();
                     int date2Day = date2.getDayOfMonth();
                     int date2Year = date2.getYear();
                     LocalDate date2Format = LocalDate.of(date2Year,date2Month,date2Day);
@@ -79,12 +80,12 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
                 }
                 if (!item.dateStart.matches("") && !item.dateEnd.matches("")) {
                     date1 = LocalDate.parse(item.dateStart, formatter);
-                    Month date1Month = date1.getMonth().plus(1);
+                    Month date1Month = date1.getMonth();
                     int date1Day = date1.getDayOfMonth();
                     int date1Year = date1.getYear();
                     LocalDate date1Format = LocalDate.of(date1Year,date1Month,date1Day);
                     date2 = LocalDate.parse(item.dateEnd, formatter);
-                    Month date2Month = date2.getMonth().plus(1);
+                    Month date2Month = date2.getMonth();
                     int date2Day = date2.getDayOfMonth();
                     int date2Year = date2.getYear();
                     LocalDate date2Format = LocalDate.of(date2Year,date2Month,date2Day);
@@ -108,7 +109,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
                     }
                 });
             } catch (Exception e) {
-                System.out.println(e.getLocalizedMessage());
+                System.out.println("!!!!!!!!!!! ERROR ITEM ADAPTER: " + e.getLocalizedMessage());
             }
         }
     }

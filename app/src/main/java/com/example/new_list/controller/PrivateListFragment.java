@@ -318,6 +318,10 @@ public class PrivateListFragment extends Fragment{
                                         inputDateString = ("0" + selectedday + "/" + "0" + selectedmonth + "/" + selectedyear);
                                         selectedmonth++;
                                         inputDate.setText("0" + selectedday + "/" + "0" + selectedmonth +"/" + selectedyear);
+                                    } else if (selectedday > 10 && selectedmonth < 10){
+                                        inputDateString = ("0" + selectedday + "/" + "0" + selectedmonth + "/" + selectedyear);
+                                        selectedmonth++;
+                                        inputDate.setText(selectedday + "/" + "0" + selectedmonth +"/" + selectedyear);
                                     }
                                 }
                             }, mYear, mMonth, mDay);
@@ -369,7 +373,7 @@ public class PrivateListFragment extends Fragment{
                 @Override
                 public void onClick(View v) {
                     if (!editTextTitle.getText().toString().matches("")) {
-                        addItem(new Item(editTextTitle.getText().toString(), editTextDescription.getText().toString(),inputDateString  , inputDateString2), arrayIndividual, adapter, pos);
+                        addItem(new Item(editTextTitle.getText().toString(), editTextDescription.getText().toString(),inputDate.getText().toString()  , inputDate2.getText().toString()), arrayIndividual, adapter, pos);
                         alert.dismiss();
                         inputDateString = "";
                         inputDateString2 = "";
@@ -481,7 +485,6 @@ public class PrivateListFragment extends Fragment{
                         public void onCancel(DialogInterface dialog) {
                             inputDateString = "";
                             inputDate.setText("");
-
                         }
                     });
                     mDatePicker.show();
@@ -529,8 +532,8 @@ public class PrivateListFragment extends Fragment{
                         if (!editTextTitle.getText().toString().matches("")) {
                             item.setTitle(editTextTitle.getText().toString());
                             item.setDescription(editTextDescription.getText().toString());
-                            item.setDateStart(inputDateString);
-                            item.setDateEnd(inputDateString2);
+                            item.setDateStart(inputDate.getText().toString());
+                            item.setDateEnd(inputDate.getText().toString());
                             editItem(item, adapter, listOfItems, pos);
                             alert.dismiss();
                             inputDateString = "";

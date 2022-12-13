@@ -188,6 +188,13 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+        toolbar.getMenu().add("Rename").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                globalList.setName("test");
+                return false;
+            }
+        });
     }
 
     public void clearGlobalListMenu() {
