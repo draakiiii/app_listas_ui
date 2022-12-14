@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import lombok.NonNull;
 
-public class Item {
+public class  Item {
 
     // Contador autoincremental
     @Ignore
@@ -25,6 +25,8 @@ public class Item {
     public String dateStart;
 
     public String dateEnd;
+
+    public Category category;
 
 
     public Item(String title, String description, String dateStart, String dateEnd) {

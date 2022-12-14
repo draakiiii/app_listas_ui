@@ -35,6 +35,10 @@ public class GlobalMethods {
         return globalListDao.getAll();
     }
 
+    public void rename(int id, String name) {
+        globalListDao.rename(id, name);
+    }
+
     public void deleteAll() {
         globalListDao.deleteAll();
     }

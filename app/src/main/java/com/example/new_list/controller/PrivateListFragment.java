@@ -20,6 +20,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -27,13 +29,16 @@ import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.new_list.R;
+import com.example.new_list.database.CategoryMethods;
 import com.example.new_list.database.GlobalMethods;
 import com.example.new_list.database.ItemAdapter;
 import com.example.new_list.helper.DataConverter;
+import com.example.new_list.model.Category;
 import com.example.new_list.model.GlobalList;
 import com.example.new_list.model.Item;
 import com.example.new_list.model.Section;
@@ -41,12 +46,14 @@ import com.google.android.material.datepicker.MaterialDatePicker;
 
 import org.w3c.dom.Text;
 
+import java.sql.SQLOutput;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -62,6 +69,8 @@ public class PrivateListFragment extends Fragment{
     private Button addButton;
     private LinearLayout linearLayout;
     private GlobalList globalList;
+    private ArrayList<Category> categoriesArrayList;
+    private CategoryMethods categoryMethods;
     private GlobalMethods database;
     private ArrayList<Section> arrayOfArrays;
     private ArrayList<Button> arrayOfButtons;
@@ -77,6 +86,7 @@ public class PrivateListFragment extends Fragment{
     private int width;
     private int toPos;
     private int fromPos;
+    private ArrayAdapter<String> adapterSpinner;
     private HorizontalScrollView horizontalScrollView;
 
     public PrivateListFragment() {
@@ -115,6 +125,9 @@ public class PrivateListFragment extends Fragment{
             mDrawer = (DrawerLayout) getActivity().findViewById(R.id.drawer_layout);
             linearLayout = view.findViewById(R.id.linearLayoutListPrivate);
             database = new GlobalMethods(getContext());
+            categoryMethods = new CategoryMethods(getContext());
+            categoriesArrayList = new ArrayList<>();
+            categoriesArrayList.addAll(categoryMethods.getAllCategories());
             globalList = database.findById(requireArguments().getInt("globallist"));
             arrayOfArrays = DataConverter.fromStringSection(globalList.getLists());
             arrayOfButtons = new ArrayList<>();
@@ -143,8 +156,18 @@ public class PrivateListFragment extends Fragment{
                 }
             }
 
+            // Crear una lista de strings con las categorías
+            List<Category> categories = new ArrayList<>();
+            categories.add(new Category(getContext().getString(R.string.add_category)));
+            categories.addAll(categoryMethods.getAllCategories());
+
+            // Crear un ArrayAdapter con la lista de categorías
+            adapterSpinner = new ArrayAdapter(getContext(), android.R.layout.simple_spinner_item, categories);
+
+
         } catch (Exception e) {
             Toast.makeText(getActivity(),R.string.error,Toast.LENGTH_SHORT).show();
+            System.out.println("ERROR: " + e.getLocalizedMessage());
         }
         return view;
     }
@@ -262,6 +285,7 @@ public class PrivateListFragment extends Fragment{
             updateGlobalList(pos, arrayIndividual);
         } catch (Exception e) {
             Toast.makeText(getActivity(),R.string.error,Toast.LENGTH_SHORT).show();
+            System.out.println("ERROR: " + e.getLocalizedMessage());
             deleteItem(arrayIndividual.get(pos), arrayOfAdapters.get(pos), arrayIndividual, pos);
         }
 
@@ -287,6 +311,7 @@ public class PrivateListFragment extends Fragment{
 
             LayoutInflater layoutInflater = LayoutInflater.from(this.getActivity());
             View promptView = layoutInflater.inflate(R.layout.fragment_add_global_item, null);
+            // Setear el adapter en el spinner
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this.getActivity()).setTitle(R.string.dialogAddItem);
             alertDialogBuilder.setView(promptView);
             alertDialogBuilder.setCancelable(false);
@@ -300,6 +325,22 @@ public class PrivateListFragment extends Fragment{
             final EditText editTextTitle = (EditText) promptView.findViewById(R.id.inputTitle);
             final EditText editTextDescription = (EditText) promptView.findViewById(R.id.inputDescription);
             final EditText inputDate = promptView.findViewById(R.id.inputDate);
+            Spinner categorySpinner = (Spinner) promptView.findViewById(R.id.categorySpinner);
+            categorySpinner.setAdapter(adapterSpinner);
+            categorySpinner.setSelection(1); // Selecciona el segundo índice, que es el general
+            categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                    if (i == 0) {
+                        addCategoryDialog();
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> adapterView) {
+
+                }
+            });
             inputDate.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -391,10 +432,10 @@ public class PrivateListFragment extends Fragment{
             alert.show();
         } catch (Exception e) {
             Toast.makeText(getActivity(),R.string.error,Toast.LENGTH_SHORT).show();
+            System.out.println("ERROR: " + e.getLocalizedMessage());
         }
 
     }
-
 
     protected void showEditDialog(Item item, ItemAdapter adapter, ArrayList listOfItems, int pos) {
         try {
@@ -416,7 +457,7 @@ public class PrivateListFragment extends Fragment{
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             if (!item.dateStart.matches("")) {
                 LocalDate tempDate1 = LocalDate.parse(item.dateStart, formatter);
-                Month date1Month = tempDate1.getMonth().plus(1);
+                Month date1Month = tempDate1.getMonth();
                 int date1Day = tempDate1.getDayOfMonth();
                 int date1Year = tempDate1.getYear();
                 LocalDate date1Format = LocalDate.of(date1Year,date1Month,date1Day);
@@ -434,7 +475,7 @@ public class PrivateListFragment extends Fragment{
 
             if (!item.dateEnd.matches("")) {
                 LocalDate tempDate2 = LocalDate.parse(item.dateEnd, formatter);
-                Month date2Month = tempDate2.getMonth().plus(1);
+                Month date2Month = tempDate2.getMonth();
                 int date2Day = tempDate2.getDayOfMonth();
                 int date2Year = tempDate2.getYear();
                 LocalDate date2Format = LocalDate.of(date2Year,date2Month,date2Day);
@@ -704,6 +745,43 @@ public class PrivateListFragment extends Fragment{
         } catch (Exception e) {
             Toast.makeText(getActivity(),R.string.error,Toast.LENGTH_SHORT).show();
         }
+    }
+
+    protected void addCategoryDialog() {
+        LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
+        View promptView = layoutInflater.inflate(R.layout.fragment_add_global_list, null);
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity()).setTitle(R.string.add_category);
+        alertDialogBuilder.setView(promptView);
+        alertDialogBuilder.setCancelable(false);
+        AlertDialog alert = alertDialogBuilder.create();
+        alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
+        alert.setCanceledOnTouchOutside(true);
+        final EditText editTextInputGlobalTitle = (EditText) promptView.findViewById(R.id.inputTitleGlobal);
+
+        final Button buttonConfirm = (Button) promptView.findViewById(R.id.buttonConfirmGlobal);
+        buttonConfirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!editTextInputGlobalTitle.getText().toString().matches("")) {
+                    Category category = new Category(editTextInputGlobalTitle.getText().toString());
+                    categoryMethods.insert(category);
+                    categoriesArrayList.add(category);
+                    adapterSpinner.notifyDataSetChanged();
+                    alert.dismiss();
+                } else Toast.makeText(getContext(),R.string.errorIntroduceName ,Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
+        final Button buttonCancel = (Button) promptView.findViewById(R.id.buttonCancelGlobal);
+        buttonCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                alert.dismiss();
+            }
+        });
+
+        alert.show();
     }
 
 

@@ -22,7 +22,7 @@
     <string name="dialogAddItem">Añadir nueva entrada</string>
     <string name="settings">Configuración</string>
     <string name="confirm_delete">Esto eliminará de forma permanente la lista.</string>
-    <string name="title_delete_list">¿Eliminar lista?</string>
+    <string name="title_delete_list">Eliminar lista</string>
     <string name="list_deleted">Lista borrada</string>
     <string name="list_created">Lista creada</string>
     <string name="title_create_list">Crear lista</string>
@@ -42,4 +42,7 @@
     <string name="set_date">Fecha de inicio</string>
     <string name="set_end_date">Fecha de fin</string>
     <string name="error">Ha ocurrido un error.</string>
+    <string name="rename_list">Renombrar lista</string>
+    <string name="delete_list">Borrar lista</string>
+    <string name="add_category">Añadir categoría</string>
 </resources>

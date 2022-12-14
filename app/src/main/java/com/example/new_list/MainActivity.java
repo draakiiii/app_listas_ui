@@ -2,17 +2,12 @@ package com.example.new_list;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
 
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.res.Configuration;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,19 +23,17 @@ import com.example.new_list.controller.SettingsFragment;
 import com.example.new_list.database.GlobalMethods;
 import com.example.new_list.helper.DataConverter;
 import com.example.new_list.model.GlobalList;
-import com.example.new_list.model.Item;
-import com.example.new_list.model.Section;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends AppCompatActivity {
     private DrawerLayout mDrawer;
     private Toolbar toolbar;
-    public NavigationView navigationView;
+    public static NavigationView navigationView;
     private GlobalMethods database;
     private ArrayList<GlobalList> arrayLists;
+    private final int DELETE_DIALOG = 0, ADD_DIALOG = 1;
 
     // Make sure to be using androidx.appcompat.app.ActionBarDrawerToggle version.
     private ActionBarDrawerToggle drawerToggle;
@@ -150,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
 
     //Método que abre una lista global
     public void openGlobalList(GlobalList globalList) {
-        deleteGlobalListMenu(globalList);
+        optionsGlobalList(globalList);
         setTitle(globalList.getName());
         Bundle bundle = new Bundle();
         bundle.putInt("globallist", globalList.getId());
@@ -179,19 +172,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Método que añade a la toolbar el botón de Remove y le añade el onClick
-    public void deleteGlobalListMenu(GlobalList globalList) {
+    public void optionsGlobalList(GlobalList globalList) {
         toolbar.getMenu().clear();  // De esta forma no se duplica
-        toolbar.getMenu().add("Remove").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        toolbar.getMenu().add(R.string.delete_list).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 deleteGlobalListConfirmDialog(globalList);
                 return false;
             }
         });
-        toolbar.getMenu().add("Rename").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        toolbar.getMenu().add(R.string.rename_list).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                globalList.setName("test");
+                renameGlobalListDialog(globalList);
                 return false;
             }
         });
@@ -228,6 +221,46 @@ public class MainActivity extends AppCompatActivity {
         });
 
         final Button buttonCancel = (Button) promptView.findViewById(R.id.buttonCancelDeleteList);
+        buttonCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                alert.dismiss();
+            }
+        });
+
+        alert.show();
+    }
+
+    // Método que permite renombrar listas
+    protected void renameGlobalListDialog(GlobalList globalList) {
+        LayoutInflater layoutInflater = LayoutInflater.from(this);
+        View promptView = layoutInflater.inflate(R.layout.fragment_add_global_list, null);
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this).setTitle(R.string.rename_list);
+        alertDialogBuilder.setView(promptView);
+        alertDialogBuilder.setCancelable(false);
+        AlertDialog alert = alertDialogBuilder.create();
+        alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
+        alert.setCanceledOnTouchOutside(true);
+        final EditText editTextInputGlobalTitle = (EditText) promptView.findViewById(R.id.inputTitleGlobal);
+        editTextInputGlobalTitle.setText(globalList.getName());
+        final Button buttonConfirm = (Button) promptView.findViewById(R.id.buttonConfirmGlobal);
+        buttonConfirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!editTextInputGlobalTitle.getText().toString().matches("")) {
+                    String newName = editTextInputGlobalTitle.getText().toString();
+                    database.rename(globalList.getId(), newName);
+                    globalList.setName(newName);
+                    System.out.println("Global list renamed");
+                    navigationView.getMenu().findItem(globalList.getId()).setTitle(newName);
+                    setTitle(newName);
+                    alert.dismiss();
+                } else Toast.makeText(getApplicationContext(),R.string.errorIntroduceName ,Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
+        final Button buttonCancel = (Button) promptView.findViewById(R.id.buttonCancelGlobal);
         buttonCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -275,5 +308,6 @@ public class MainActivity extends AppCompatActivity {
 
         alert.show();
     }
+
 
 }

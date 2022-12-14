@@ -29,6 +29,25 @@
         android:hint="@string/set_description"
         android:inputType="text"
         android:minHeight="48dp"/>
+    <TextView
+        android:id="@+id/tv_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="4dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginRight="4dp"
+        android:text="Elige una categoría"
+        android:minHeight="24dp"/>
+    <Spinner
+        android:id="@+id/categorySpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="4dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="4dp"
+        android:minHeight="48dp"
+        android:contentDescription="test"/>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -59,6 +78,8 @@
             android:inputType="date"
             android:minHeight="48dp"
             android:focusable="false"/>
+
+
     </LinearLayout>
 
 

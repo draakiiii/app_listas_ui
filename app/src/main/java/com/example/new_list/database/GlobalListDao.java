@@ -34,6 +34,9 @@ public interface GlobalListDao {
     @Query("UPDATE globalList SET listOfLists = :listOfLists WHERE id =:id")
     void updateItem(String listOfLists, int id);
 
+    @Query("UPDATE globalList SET name = :newName WHERE id = :id")
+    void rename(int id, String newName);
+
     @Insert(onConflict = REPLACE)
     void insert(GlobalList globalList);
 }
