@@ -4,6 +4,9 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
+
+import com.example.new_list.helper.DataConverter;
 
 import java.time.LocalDate;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -28,19 +31,39 @@ public class  Item {
 
     public Category category;
 
+    private Category subcategorySelected;
 
-    public Item(String title, String description, String dateStart, String dateEnd) {
+
+    public Item(String title, String description, String dateStart, String dateEnd, Category category) {
         this.id = count.incrementAndGet();
         this.title = title;
         this.description = description;
         this.dateStart = dateStart;
         this.dateEnd = dateEnd;
+        this.category = category;
+    }
+
+    public Item(String title, String description, String dateStart, String dateEnd, Category category, Category subcategorySelected) {
+        this.id = count.incrementAndGet();
+        this.title = title;
+        this.description = description;
+        this.dateStart = dateStart;
+        this.dateEnd = dateEnd;
+        this.category = category;
+        this.subcategorySelected = subcategorySelected;
     }
 
     public int getId() {
         return id;
     }
 
+    public Category getSubcategorySelected() {
+        return subcategorySelected;
+    }
+
+    public void setSubcategorySelected(Category subcategorySelected) {
+        this.subcategorySelected = subcategorySelected;
+    }
 
     public String getTitle() {
         return title;
@@ -72,6 +95,14 @@ public class  Item {
 
     public void setDateEnd(String dateEnd) {
         this.dateEnd = dateEnd;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     @Override

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -16,6 +17,7 @@
         android:layout_marginRight="4dp"
         android:layout_marginBottom="4dp"
         android:hint="@string/set_title"
+        android:autofillHints="name"
         android:inputType="text"
         android:minHeight="48dp"/>
     <EditText
@@ -27,6 +29,7 @@
         android:layout_marginRight="4dp"
         android:layout_marginBottom="4dp"
         android:hint="@string/set_description"
+        android:autofillHints="name"
         android:inputType="text"
         android:minHeight="48dp"/>
     <TextView
@@ -48,6 +51,25 @@
         android:layout_marginBottom="4dp"
         android:minHeight="48dp"
         android:contentDescription="test"/>
+    <TextView
+        android:id="@+id/tv_spinner_subcategory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="4dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginRight="4dp"
+        android:text="@string/choose_subcategory"
+        android:minHeight="24dp"/>
+    <Spinner
+        android:id="@+id/subcategorySpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="4dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="4dp"
+        android:minHeight="48dp"
+        android:contentDescription="category"/>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -78,23 +100,22 @@
             android:inputType="date"
             android:minHeight="48dp"
             android:focusable="false"/>
-
-
     </LinearLayout>
 
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:visibility="gone">
 
         <Button
-            android:id="@+id/buttonCancelAddItem"
+            android:id="@+id/buttonDeleteAddItem"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:background="@drawable/custom_button"
-            android:text="@string/cancel"/>
+            android:text="@string/delete"/>
 
         <Button
             android:id="@+id/buttonConfirmAddItem"
@@ -103,6 +124,15 @@
             android:layout_margin="5dp"
             android:text="@string/confirm"
             android:background="@drawable/custom_button"/>
+
+        <Button
+            android:id="@+id/buttonDuplicateAddItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="@string/duplicate"
+            android:background="@drawable/custom_button"/>
+
 
     </LinearLayout>
 

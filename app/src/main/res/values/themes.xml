@@ -18,8 +18,25 @@
         <item name="android:buttonStyle">@style/Widget.MaterialComponents.Button</item>
         <item name="backgroundColor">@color/white</item>
         <item name="android:windowLightStatusBar">true</item>
+        <item name="android:buttonBarButtonStyle">@style/DatePickerTheme.ButtonBarNegativeButtonStyle</item>
     </style>
+
     <style name="LinearLayoutMargin" parent="Theme.App_listas">
         <item name="android:layout_marginLeft">100dp</item>
+        <item name="android:maxWidth">500px</item>
     </style>
+
+    <style name="CustomMaterialDialog" parent="@style/ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <!-- Background Color-->
+        <item name="android:background">?attr/colorPrimaryVariant</item>
+        <!-- Text Color for title and message -->
+        <item name="colorOnSurface">?attr/colorOnPrimary</item>
+        <!-- Text Color for buttons -->
+        <item name="colorPrimary">?attr/colorOnPrimary</item>
+    </style>
+
+    <style name="DatePickerTheme.ButtonBarNegativeButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+    </style>
+
 </resources>

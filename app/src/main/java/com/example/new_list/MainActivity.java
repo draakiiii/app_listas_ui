@@ -1,5 +1,7 @@
 package com.example.new_list;
 
+import static com.example.new_list.controller.PrivateListFragment.categories;
+
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -23,9 +25,13 @@ import com.example.new_list.controller.SettingsFragment;
 import com.example.new_list.database.GlobalMethods;
 import com.example.new_list.helper.DataConverter;
 import com.example.new_list.model.GlobalList;
+import com.example.new_list.model.Item;
+import com.example.new_list.model.Section;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     private DrawerLayout mDrawer;
@@ -188,6 +194,13 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+        toolbar.getMenu().add(R.string.show_stats).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                showStats(globalList);
+                return false;
+            }
+        });
     }
 
     public void clearGlobalListMenu() {
@@ -300,6 +313,60 @@ public class MainActivity extends AppCompatActivity {
 
         final Button buttonCancel = (Button) promptView.findViewById(R.id.buttonCancelGlobal);
         buttonCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                alert.dismiss();
+            }
+        });
+
+        alert.show();
+    }
+
+    protected void showStats(GlobalList globalList) {
+        LayoutInflater layoutInflater = LayoutInflater.from(this);
+        View promptView = layoutInflater.inflate(R.layout.show_stats, null);
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this).setTitle(R.string.stats_title);
+        alertDialogBuilder.setView(promptView);
+        alertDialogBuilder.setCancelable(false);
+        AlertDialog alert = alertDialogBuilder.create();
+        alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
+        alert.setCanceledOnTouchOutside(true);
+        globalList = database.findById(globalList.getId());
+        final TextView stats = (TextView) promptView.findViewById(R.id.stats);
+        ArrayList<Section> arrayOfArrays = DataConverter.fromStringSection(globalList.getLists());
+        if (arrayOfArrays.size() != 0 && arrayOfArrays.get(0).getListOfItems().size() != 0) {
+            // Crear un mapa para almacenar los contadores de categorías
+            Map<String, Integer> categoryCounts = new HashMap<>();
+
+            for (int i = 0; i < arrayOfArrays.size(); i++) {
+                ArrayList<Item> arrayOfItemsPrivate = DataConverter.changeItemType(arrayOfArrays.get(i).getListOfItems());
+                String categoryName = "";
+                for (Item item:arrayOfItemsPrivate) {
+                    if (item.getCategory() != null && categories.contains(item.getCategory().getName())) categoryName = item.getCategory().getName();
+                    else categoryName = categories.get(1).getName();
+
+                    // Si ya se ha contado una ocurrencia de esta categoría, incrementar el contador
+                    if (categoryCounts.containsKey(categoryName)) {
+                        categoryCounts.put(categoryName, categoryCounts.get(categoryName) + 1);
+                    }
+                    // Si no, agregar una nueva entrada al mapa con un contador inicial de 1
+                    else {
+                        categoryCounts.put(categoryName, 1);
+                    }
+                }
+            }
+
+            // Imprimir los resultados
+            String resultado = "";
+            for (Map.Entry<String, Integer> entry : categoryCounts.entrySet()) {
+                resultado = resultado + "\n" + entry.getKey() + ": " + entry.getValue();
+            }
+            stats.setText(resultado);
+        } else {
+            stats.setText(R.string.show_stats_view);
+        }
+        final Button buttonConfirm = (Button) promptView.findViewById(R.id.buttonConfirmGlobal);
+        buttonConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 alert.dismiss();

@@ -46,4 +46,12 @@
     <string name="rename_list">Rename list</string>
     <string name="delete_list">Delete list</string>
     <string name="add_category">Add category</string>
+    <string name="general">General</string>
+    <string name="no_category">There has to be at least one category</string>
+    <string name="show_stats">Show stats</string>
+    <string name="show_stats_view">No stats available</string>
+    <string name="stats_title">Stats</string>
+    <string name="delete_category">Delete category</string>
+    <string name="choose_category">Choose a category</string>
+    <string name="choose_subcategory">Choose a subcategory</string>
 </resources>

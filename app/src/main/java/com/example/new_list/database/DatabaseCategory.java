@@ -8,7 +8,7 @@ import androidx.room.RoomDatabase;
 
 import com.example.new_list.model.Category;
 
-@Database(entities = {Category.class}, version = 1)
+@Database(entities = {Category.class}, version = 3)
 public abstract class DatabaseCategory extends RoomDatabase {
     private static DatabaseCategory INSTANCE;
 

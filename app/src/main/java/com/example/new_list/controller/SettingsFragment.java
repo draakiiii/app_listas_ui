@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -26,6 +27,9 @@ import com.example.new_list.database.CategoryMethods;
 import com.example.new_list.database.GlobalMethods;
 import com.example.new_list.model.Category;
 import com.example.new_list.model.GlobalList;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SettingsFragment extends Fragment {
 
@@ -81,11 +85,12 @@ public class SettingsFragment extends Fragment {
         });
 
         TextView deleteAllCategories = view.findViewById(R.id.btn_delete_categories);
-        deleteAll.setOnClickListener(new View.OnClickListener() {
+        deleteAllCategories.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 try {
-
+                    if (categoryMethods.getAllCategories().size() > 0) showSpinnerCategories();
+                    else Toast.makeText(getContext(),R.string.no_category ,Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
                     System.out.println("ERROR: " + e.getLocalizedMessage());
                 }
@@ -95,36 +100,46 @@ public class SettingsFragment extends Fragment {
         return view;
     }
 
-//    protected void showSpinnerCategories() {
-//        LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
-//        View promptView = layoutInflater.inflate(R.layout.spinner_categories, null);
-//        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity()).setTitle(R.string.add_category);
-//        alertDialogBuilder.setView(promptView);
-//        alertDialogBuilder.setCancelable(false);
-//        AlertDialog alert = alertDialogBuilder.create();
-//        alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
-//        alert.setCanceledOnTouchOutside(true);
-//        Spinner categorySpinner = (Spinner) promptView.findViewById(R.id.categorySpinner);
-//        categorySpinner.setAdapter(adapterSpinner);
-//        final Button buttonConfirm = (Button) promptView.findViewById(R.id.buttonConfirmGlobal);
-//        buttonConfirm.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                if (!editTextInputGlobalTitle.getText().toString().matches("")) {
-//                    alert.dismiss();
-//                } else Toast.makeText(getContext(),R.string.errorIntroduceName ,Toast.LENGTH_SHORT).show();
-//
-//            }
-//        });
-//
-//        final Button buttonCancel = (Button) promptView.findViewById(R.id.buttonCancelGlobal);
-//        buttonCancel.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                alert.dismiss();
-//            }
-//        });
-//
-//        alert.show();
-//    }
+    protected void showSpinnerCategories() {
+        LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
+        View promptView = layoutInflater.inflate(R.layout.spinner_categories, null);
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity()).setTitle(R.string.add_category);
+        alertDialogBuilder.setView(promptView);
+        alertDialogBuilder.setCancelable(false);
+        AlertDialog alert = alertDialogBuilder.create();
+        alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
+        alert.setCanceledOnTouchOutside(true);
+        Spinner categorySpinner = promptView.findViewById(R.id.categorySpinnerDelete);
+
+        List<Category> categories = new ArrayList<>();
+        categories.addAll(categoryMethods.getAllCategories());
+        ArrayAdapter<String> adapterSpinner = new ArrayAdapter(getContext(), android.R.layout.simple_spinner_item, categories);
+
+        // Crear un ArrayAdapter con la lista de categorías
+        adapterSpinner = new ArrayAdapter(getContext(), android.R.layout.simple_spinner_item, categories);
+        categorySpinner.setAdapter(adapterSpinner);
+        adapterSpinner.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        final Button buttonConfirm = promptView.findViewById(R.id.buttonDeleteCategory);
+        buttonConfirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (categorySpinner.getSelectedItemId() != -1) {
+                    categoryMethods.delete((Category) categorySpinner.getSelectedItem());
+                    categories.remove(categorySpinner.getSelectedItemId());
+                    alert.dismiss();
+                } else Toast.makeText(getContext(),R.string.errorIntroduceName ,Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
+        final Button buttonCancel = (Button) promptView.findViewById(R.id.buttonCancelCategory);
+        buttonCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                alert.dismiss();
+            }
+        });
+
+        alert.show();
+    }
 }

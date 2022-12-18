@@ -45,4 +45,12 @@
     <string name="rename_list">Renombrar lista</string>
     <string name="delete_list">Borrar lista</string>
     <string name="add_category">Añadir categoría</string>
+    <string name="general">General</string>
+    <string name="no_category">Tiene que haber al menos una categoría</string>
+    <string name="show_stats">Mostrar estadísticas</string>
+    <string name="show_stats_view">No hay estadísticas disponibles</string>
+    <string name="stats_title">Estadísticas</string>
+    <string name="delete_category">Borrar categoría</string>
+    <string name="choose_category">Elige una categoría</string>
+    <string name="choose_subcategory">Elige una subcategoría</string>
 </resources>

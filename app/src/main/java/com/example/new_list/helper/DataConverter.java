@@ -2,6 +2,7 @@ package com.example.new_list.helper;
 
 import androidx.room.TypeConverter;
 
+import com.example.new_list.model.Category;
 import com.example.new_list.model.GlobalList;
 import com.example.new_list.model.Item;
 import com.example.new_list.model.Section;
@@ -69,11 +70,32 @@ public class DataConverter implements Serializable {
         return fromStringSection(fromArrayListSection(list));
     }
 
-
-    public static ArrayList<Item> globalToItem(ArrayList<Section> arraySection, int pos) {
-        arraySection = changeSectionType(arraySection);
-        return changeItemType(arraySection.get(pos).getListOfItems());
+    @TypeConverter
+    public static ArrayList<Category> fromStringCategories(String value) {
+        Type listType = new TypeToken<ArrayList<Category>>() {}.getType();
+        return new Gson().fromJson(value, listType);
     }
 
+    @TypeConverter
+    public static String fromArrayListCategories(ArrayList<Category> categories) {
+        Gson gson = new Gson();
+        Type listType = new TypeToken<ArrayList<Category>>() {}.getType();
+        String json = gson.toJson(categories, listType);
+        return json;
+    }
+
+    @TypeConverter
+    public static Category fromStringCategory(String value) {
+        Type listType = new TypeToken<Category>() {}.getType();
+        return new Gson().fromJson(value, listType);
+    }
+
+    @TypeConverter
+    public static String fromCategoryToString(Category category) {
+        Gson gson = new Gson();
+        Type listType = new TypeToken<Category>() {}.getType();
+        String json = gson.toJson(category, listType);
+        return json;
+    }
 
 }

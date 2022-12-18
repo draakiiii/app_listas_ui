@@ -11,7 +11,7 @@ import com.example.new_list.helper.DataConverter;
 import com.example.new_list.model.GlobalList;
 import com.example.new_list.model.Item;
 
-@Database(entities = {GlobalList.class}, version = 1)
+@Database(entities = {GlobalList.class}, version = 3)
 @TypeConverters(DataConverter.class)
 public abstract class DatabaseGlobalList extends RoomDatabase {
 

@@ -13,10 +13,8 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.provider.ContactsContract;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -42,18 +40,14 @@ import com.example.new_list.model.Category;
 import com.example.new_list.model.GlobalList;
 import com.example.new_list.model.Item;
 import com.example.new_list.model.Section;
-import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-import org.w3c.dom.Text;
-
-import java.sql.SQLOutput;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
-import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -69,7 +63,7 @@ public class PrivateListFragment extends Fragment{
     private Button addButton;
     private LinearLayout linearLayout;
     private GlobalList globalList;
-    private ArrayList<Category> categoriesArrayList;
+    public static ArrayList<Category> categories, subCategories;
     private CategoryMethods categoryMethods;
     private GlobalMethods database;
     private ArrayList<Section> arrayOfArrays;
@@ -80,14 +74,18 @@ public class PrivateListFragment extends Fragment{
     private ItemTouchHelper itemTouchHelper;
     private ItemTouchHelper.SimpleCallback simpleCallback;
     private static AtomicInteger countButton;
-    private String inputDateString;
-    private String inputDateString2;
-    private int height;
-    private int width;
-    private int toPos;
-    private int fromPos;
-    private ArrayAdapter<String> adapterSpinner;
+    private Spinner categorySpinner, subCategorySpinner;
+    private String inputDateStringStart, inputDateStringEnd;
+    private Item tempItem;
+    private int height, width, toPos, fromPos;
+    private ArrayList<String> categoriesName, subcategoriesName;
+    private ArrayAdapter<Category> adapterSpinnerCategory, adapterSpinnerSubcategory;
     private HorizontalScrollView horizontalScrollView;
+    private EditText editTextTitle, editTextDescription, inputDateStart, inputDateEnd;
+    private androidx.appcompat.app.AlertDialog alert;
+    private final int EDIT_DIALOG = 0, INPUT_DIALOG = 1;
+    private DateTimeFormatter formatter;
+    private Category tempCategory;
 
     public PrivateListFragment() {
     }
@@ -122,12 +120,11 @@ public class PrivateListFragment extends Fragment{
             height = displayMetrics.heightPixels;
             width = displayMetrics.widthPixels;
             width = (width / 100) * 90;
+            formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             mDrawer = (DrawerLayout) getActivity().findViewById(R.id.drawer_layout);
             linearLayout = view.findViewById(R.id.linearLayoutListPrivate);
             database = new GlobalMethods(getContext());
             categoryMethods = new CategoryMethods(getContext());
-            categoriesArrayList = new ArrayList<>();
-            categoriesArrayList.addAll(categoryMethods.getAllCategories());
             globalList = database.findById(requireArguments().getInt("globallist"));
             arrayOfArrays = DataConverter.fromStringSection(globalList.getLists());
             arrayOfButtons = new ArrayList<>();
@@ -135,8 +132,8 @@ public class PrivateListFragment extends Fragment{
             arrayOfRecycler = new ArrayList<>();
             arrayOfAdapters = new ArrayList<>();
             mColumnCount = arrayOfArrays.size();
-            inputDateString2 = "";
-            inputDateString = "";
+            inputDateStringEnd = "";
+            inputDateStringStart = "";
             System.out.println("Número de listas: " + mColumnCount);
 
             addButton = view.findViewById(R.id.addPrivateList);
@@ -157,17 +154,33 @@ public class PrivateListFragment extends Fragment{
             }
 
             // Crear una lista de strings con las categorías
-            List<Category> categories = new ArrayList<>();
+            categories = new ArrayList<>();
             categories.add(new Category(getContext().getString(R.string.add_category)));
+            categories.add(new Category(getContext().getString(R.string.general)));
             categories.addAll(categoryMethods.getAllCategories());
 
-            // Crear un ArrayAdapter con la lista de categorías
-            adapterSpinner = new ArrayAdapter(getContext(), android.R.layout.simple_spinner_item, categories);
+            subCategories = new ArrayList<>();
 
+            // Crear un ArrayAdapter con la lista de categorías
+            adapterSpinnerCategory = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, categories);
+            adapterSpinnerSubcategory = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, subCategories);
+            adapterSpinnerCategory.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            adapterSpinnerSubcategory.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+            categoriesName = new ArrayList<>();
+            subcategoriesName = new ArrayList<>();
+            for (Category category:categories) {
+                categoriesName.add(category.getName());
+//                if (DataConverter.fromStringCategories(category.getArrayOfSubcategories()) != null){
+//                    for (Category subcategory : DataConverter.fromStringCategories(category.getArrayOfSubcategories())) {
+//                        subcategoriesName.add(subcategory.getName());
+//                    }
+//                }
+            }
 
         } catch (Exception e) {
-            Toast.makeText(getActivity(),R.string.error,Toast.LENGTH_SHORT).show();
-            System.out.println("ERROR: " + e.getLocalizedMessage());
+            showToastError(e);
+
         }
         return view;
     }
@@ -180,7 +193,7 @@ public class PrivateListFragment extends Fragment{
             globalList.setLists(DataConverter.fromArrayListSection(arrayOfArrays));
             database.updateItem(globalList);
         } catch (Exception e) {
-            Toast.makeText(getActivity(),R.string.error,Toast.LENGTH_SHORT).show();
+            showToastError(e);
         }
 
     }
@@ -194,7 +207,7 @@ public class PrivateListFragment extends Fragment{
             Toast.makeText(getActivity(),R.string.list_created,Toast.LENGTH_SHORT).show();
             generateGlobalView(pos, arrayOfItemsPrivate, arrayOfArrays.get(pos).getTitle());
         } catch (Exception e) {
-            Toast.makeText(getActivity(),R.string.error,Toast.LENGTH_SHORT).show();
+            showToastError(e);
         }
     }
 
@@ -234,11 +247,21 @@ public class PrivateListFragment extends Fragment{
             arrayOfRecycler.get(lastButton).setLayoutManager(layoutManager);
             RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(width, LinearLayout.LayoutParams.WRAP_CONTENT);
             arrayOfRecycler.get(lastButton).setLayoutParams(lp);
-
             linearLayout.addView(scrollView);
             linearLayoutPrivate.addView(linearTitle);
             linearTitle.addView(tv_private_title);
+
+            // Obtener el padre actual de la vista
+            ViewGroup currentParent = (ViewGroup) arrayOfCounts.get(pos).getParent();
+
+            // Si la vista ya tiene un padre, eliminarla del padre actual
+            if (currentParent != null) {
+                currentParent.removeView(arrayOfCounts.get(pos));
+            }
+
+            // Agregar la vista al nuevo padre
             linearTitle.addView(arrayOfCounts.get(pos));
+
             scrollView.addView(linearLayoutPrivate);
             linearLayoutPrivate.addView(arrayOfRecycler.get(lastButton));
             linearLayoutPrivate.addView(arrayOfButtons.get(lastButton));
@@ -284,8 +307,8 @@ public class PrivateListFragment extends Fragment{
             itemTouchHelper.attachToRecyclerView(arrayOfRecycler.get(lastButton));
             updateGlobalList(pos, arrayIndividual);
         } catch (Exception e) {
-            Toast.makeText(getActivity(),R.string.error,Toast.LENGTH_SHORT).show();
-            System.out.println("ERROR: " + e.getLocalizedMessage());
+            showToastError(e);
+
             deleteItem(arrayIndividual.get(pos), arrayOfAdapters.get(pos), arrayIndividual, pos);
         }
 
@@ -302,314 +325,43 @@ public class PrivateListFragment extends Fragment{
             updateGlobalList(pos, arrayIndividual);
             countItemsToTitle(pos, arrayIndividual);
         } catch (Exception e) {
-            Toast.makeText(getActivity(),R.string.error,Toast.LENGTH_SHORT).show();
+            showToastError(e);
         }
     }
 
     protected void showInputDialog(ArrayList arrayIndividual, ItemAdapter adapter, int pos) {
         try {
-
             LayoutInflater layoutInflater = LayoutInflater.from(this.getActivity());
-            View promptView = layoutInflater.inflate(R.layout.fragment_add_global_item, null);
-            // Setear el adapter en el spinner
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this.getActivity()).setTitle(R.string.dialogAddItem);
+            View promptView = layoutInflater.inflate(R.layout.fragment_add_item, null);
+            MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(this.getActivity(), R.style.CustomMaterialDialog).setTitle(R.string.dialogEditItem);
             alertDialogBuilder.setView(promptView);
-            alertDialogBuilder.setCancelable(false);
-            AlertDialog alert = alertDialogBuilder.create();
-            alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
-            alert.setCanceledOnTouchOutside(true);
-            Calendar mcurrentDate = Calendar.getInstance();
-            final int mYear = mcurrentDate.get(Calendar.YEAR);
-            final int mMonth = mcurrentDate.get(Calendar.MONTH);
-            final int mDay = mcurrentDate.get(Calendar.DAY_OF_MONTH);
-            final EditText editTextTitle = (EditText) promptView.findViewById(R.id.inputTitle);
-            final EditText editTextDescription = (EditText) promptView.findViewById(R.id.inputDescription);
-            final EditText inputDate = promptView.findViewById(R.id.inputDate);
-            Spinner categorySpinner = (Spinner) promptView.findViewById(R.id.categorySpinner);
-            categorySpinner.setAdapter(adapterSpinner);
-            categorySpinner.setSelection(1); // Selecciona el segundo índice, que es el general
-            categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                    if (i == 0) {
-                        addCategoryDialog();
-                    }
-                }
 
-                @Override
-                public void onNothingSelected(AdapterView<?> adapterView) {
+            createDialogButtons(pos, arrayIndividual, adapter, alertDialogBuilder, getString(R.string.dialogAddItem), promptView);
 
-                }
-            });
-            inputDate.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    DatePickerDialog mDatePicker = new DatePickerDialog(getActivity(),
-                            new DatePickerDialog.OnDateSetListener() {
-                                public void onDateSet(DatePicker datepicker, int selectedyear, int selectedmonth, int selectedday) {
-                                    if (selectedday > 9 && selectedmonth > 9) {
-                                        inputDateString = (selectedday + "/" + selectedmonth + "/" + selectedyear);
-                                        selectedmonth++;
-                                        inputDate.setText(selectedday + "/" + selectedmonth +"/" + selectedyear);
-                                    } else if (selectedday < 10 && selectedmonth > 9) {
-                                        inputDateString = ("0" + selectedday + "/" + selectedmonth + "/" + selectedyear);
-                                        selectedmonth++;
-                                        inputDate.setText("0" + selectedday + "/" + selectedmonth +"/" + selectedyear);
-                                    } else if (selectedday < 10 && selectedmonth < 10) {
-                                        inputDateString = ("0" + selectedday + "/" + "0" + selectedmonth + "/" + selectedyear);
-                                        selectedmonth++;
-                                        inputDate.setText("0" + selectedday + "/" + "0" + selectedmonth +"/" + selectedyear);
-                                    } else if (selectedday > 10 && selectedmonth < 10){
-                                        inputDateString = ("0" + selectedday + "/" + "0" + selectedmonth + "/" + selectedyear);
-                                        selectedmonth++;
-                                        inputDate.setText(selectedday + "/" + "0" + selectedmonth +"/" + selectedyear);
-                                    }
-                                }
-                            }, mYear, mMonth, mDay);
-                    mDatePicker.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                        @Override
-                        public void onCancel(DialogInterface dialog) {
-                            inputDate.setText("");
-                            inputDateString = "";
-                        }
-                    });
-                    mDatePicker.show();
-                }
-            });
-            final EditText inputDate2 = promptView.findViewById(R.id.inputDate2);
-            inputDate2.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    DatePickerDialog mDatePicker = new DatePickerDialog(getActivity(),
-                            new DatePickerDialog.OnDateSetListener() {
-                                public void onDateSet(DatePicker datepicker, int selectedyear, int selectedmonth, int selectedday) {
-                                    if (selectedday > 9 && selectedmonth > 9) {
-                                        inputDateString2 = (selectedday + "/" + selectedmonth + "/" + selectedyear);
-                                        selectedmonth++;
-                                        inputDate2.setText(selectedday + "/" + selectedmonth +"/" + selectedyear);
-                                    } else if (selectedday < 10 && selectedmonth > 9) {
-                                        inputDateString2 = ("0" + selectedday + "/" + selectedmonth + "/" + selectedyear);
-                                        selectedmonth++;
-                                        inputDate2.setText("0" + selectedday + "/" + selectedmonth +"/" + selectedyear);
-                                    } else if (selectedday < 10 && selectedmonth < 10) {
-                                        inputDateString2 = ("0" + selectedday + "/" + "0" + selectedmonth + "/" + selectedyear);
-                                        selectedmonth++;
-                                        inputDate2.setText("0" + selectedday + "/" + "0" + selectedmonth +"/" + selectedyear);
-                                    }
-                                }
-                            }, mYear, mMonth, mDay);
-                    mDatePicker.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                        @Override
-                        public void onCancel(DialogInterface dialog) {
-                            inputDate2.setText("");
-                            inputDateString2 = "";
-                        }
-                    });
-                    mDatePicker.show();
-                }
-            });
-            final Button buttonConfirm = (Button) promptView.findViewById(R.id.buttonConfirmAddItem);
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            buttonConfirm.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (!editTextTitle.getText().toString().matches("")) {
-                        addItem(new Item(editTextTitle.getText().toString(), editTextDescription.getText().toString(),inputDate.getText().toString()  , inputDate2.getText().toString()), arrayIndividual, adapter, pos);
-                        alert.dismiss();
-                        inputDateString = "";
-                        inputDateString2 = "";
-                    } else Toast.makeText(getActivity(),R.string.errorIntroduceTitle,Toast.LENGTH_SHORT).show();
-
-                }
-            });
-            final Button buttonCancel = (Button) promptView.findViewById(R.id.buttonCancelAddItem);
-            buttonCancel.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    alert.dismiss();
-                }
-            });
+//            initDialogElements(alertDialogBuilder, getString(R.string.dialogAddItem), null, null, null);
+//            itemDetailDialog(alertDialogBuilder, promptView, alert, arrayIndividual, adapter, pos);
             alert.show();
+
         } catch (Exception e) {
-            Toast.makeText(getActivity(),R.string.error,Toast.LENGTH_SHORT).show();
-            System.out.println("ERROR: " + e.getLocalizedMessage());
+            showToastError(e);
+
         }
 
     }
 
     protected void showEditDialog(Item item, ItemAdapter adapter, ArrayList listOfItems, int pos) {
         try {
+
             LayoutInflater layoutInflater = LayoutInflater.from(this.getActivity());
-            View promptView = layoutInflater.inflate(R.layout.fragment_edit_global_item, null);
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this.getActivity()).setTitle(R.string.dialogEditItem);
+            View promptView = layoutInflater.inflate(R.layout.fragment_add_item, null);
+            MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(this.getActivity(), R.style.CustomMaterialDialog).setTitle(R.string.dialogEditItem);
             alertDialogBuilder.setView(promptView);
-            alertDialogBuilder.setCancelable(false);
-            AlertDialog alert = alertDialogBuilder.create();
-            alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
-            alert.setCanceledOnTouchOutside(true);
-            EditText editTextTitle = (EditText) promptView.findViewById(R.id.inputTitle);
-            EditText editTextDescription = (EditText) promptView.findViewById(R.id.inputDescription);
-            Button buttonConfirm = (Button) promptView.findViewById(R.id.buttonConfirmAddItem);
-            EditText inputDate = promptView.findViewById(R.id.inputDate);
-            EditText inputDate2 = promptView.findViewById(R.id.inputDate2);
 
+            editDialogButtons(item, pos, listOfItems, adapter, alertDialogBuilder, getString(R.string.dialogEditItem), promptView);
 
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            if (!item.dateStart.matches("")) {
-                LocalDate tempDate1 = LocalDate.parse(item.dateStart, formatter);
-                Month date1Month = tempDate1.getMonth();
-                int date1Day = tempDate1.getDayOfMonth();
-                int date1Year = tempDate1.getYear();
-                LocalDate date1Format = LocalDate.of(date1Year,date1Month,date1Day);
-                inputDate.setText(date1Format.format(formatter));
-
-                date1Month = date1Month.minus(1);
-                if (date1Day > 9 && date1Month.getValue() > 9) {
-                    inputDateString = (date1Day + "/" + date1Month.getValue() + "/" + date1Year);
-                } else if (date1Day < 10 && date1Month.getValue() > 9) {
-                    inputDateString = ("0" + date1Day + "/" + date1Month.getValue() + "/" + date1Year);
-                } else if (date1Day < 10 && date1Month.getValue() < 10) {
-                    inputDateString = ("0" + date1Day + "/" + "0" + date1Month.getValue() + "/" + date1Year);
-                }
-            }
-
-            if (!item.dateEnd.matches("")) {
-                LocalDate tempDate2 = LocalDate.parse(item.dateEnd, formatter);
-                Month date2Month = tempDate2.getMonth();
-                int date2Day = tempDate2.getDayOfMonth();
-                int date2Year = tempDate2.getYear();
-                LocalDate date2Format = LocalDate.of(date2Year,date2Month,date2Day);
-                inputDate2.setText(date2Format.format(formatter));
-
-                date2Month = date2Month.minus(1);
-                if (date2Day > 9 && date2Month.getValue() > 9) {
-                    inputDateString2 = (date2Day + "/" + date2Month.getValue() + "/" + date2Year);
-                } else if (date2Day < 10 && date2Month.getValue() > 9) {
-                    inputDateString2 = ("0" + date2Day + "/" + date2Month.getValue() + "/" + date2Year);
-                } else if (date2Day < 10 && date2Month.getValue() < 10) {
-                    inputDateString2 = ("0" + date2Day + "/" + "0" + date2Month.getValue() + "/" + date2Year);
-                }
-            }
-
-            LocalDate date1 = LocalDate.now();
-            LocalDate date2 = LocalDate.now();
-
-            if (!item.dateStart.matches("")) date1 = LocalDate.parse(item.dateStart, formatter);
-            if (!item.dateEnd.matches("")) date2 = LocalDate.parse(item.dateEnd, formatter);
-
-            LocalDate dateStart = date1;
-            LocalDate dateEnd = date2;
-
-            inputDate.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    DatePickerDialog mDatePicker = new DatePickerDialog(getActivity(),
-                            new DatePickerDialog.OnDateSetListener() {
-                                public void onDateSet(DatePicker datepicker, int selectedyear, int selectedmonth, int selectedday) {
-                                    if (selectedday > 9 && selectedmonth > 9) {
-                                        inputDateString = (selectedday + "/" + selectedmonth + "/" + selectedyear);
-                                        selectedmonth++;
-                                        inputDate.setText(selectedday + "/" + selectedmonth +"/" + selectedyear);
-                                    } else if (selectedday < 10 && selectedmonth > 9) {
-                                        inputDateString = ("0" + selectedday + "/" + selectedmonth + "/" + selectedyear);
-                                        selectedmonth++;
-                                        inputDate.setText("0" + selectedday + "/" + selectedmonth +"/" + selectedyear);
-                                    } else if (selectedday < 10 && selectedmonth < 10) {
-                                        inputDateString = ("0" + selectedday + "/" + "0" + selectedmonth + "/" + selectedyear);
-                                        selectedmonth++;
-                                        inputDate.setText("0" + selectedday + "/" + "0" + selectedmonth +"/" + selectedyear);
-                                    }
-                                }
-                            }, dateStart.getYear(), dateStart.getMonthValue(), dateStart.getDayOfMonth());
-                    mDatePicker.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                        @Override
-                        public void onCancel(DialogInterface dialog) {
-                            inputDateString = "";
-                            inputDate.setText("");
-                        }
-                    });
-                    mDatePicker.show();
-                }
-            });
-
-            inputDate2.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    DatePickerDialog mDatePicker = new DatePickerDialog(getActivity(),
-                            new DatePickerDialog.OnDateSetListener() {
-                                public void onDateSet(DatePicker datepicker, int selectedyear, int selectedmonth, int selectedday) {
-                                    if (selectedday > 9) {
-                                        inputDateString2 = (selectedday + "/" + selectedmonth + "/" + selectedyear);
-                                        selectedmonth++;
-                                        inputDate2.setText(selectedday + "/" + selectedmonth +"/" + selectedyear);
-                                    } else if (selectedday < 10 && selectedmonth > 9) {
-                                        inputDateString2 = ("0" + selectedday + "/" + selectedmonth + "/" + selectedyear);
-                                        selectedmonth++;
-                                        inputDate2.setText("0" + selectedday + "/" + selectedmonth +"/" + selectedyear);
-                                    } else if (selectedday < 10 && selectedmonth < 10) {
-                                        inputDateString2 = ("0" + selectedday + "/" + "0" + selectedmonth + "/" + selectedyear);
-                                        selectedmonth++;
-                                        inputDate2.setText("0" + selectedday + "/" + "0" + selectedmonth +"/" + selectedyear);
-                                    }
-                                }
-                            }, dateEnd.getYear(), dateEnd.getMonthValue(), dateEnd.getDayOfMonth());
-                    mDatePicker.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                        @Override
-                        public void onCancel(DialogInterface dialog) {
-                            inputDateString2 = "";
-                            inputDate2.setText("");
-                        }
-                    });
-                    mDatePicker.show();
-                }
-            });
-
-            editTextTitle.setText(item.getTitle());
-            editTextDescription.setText(item.getDescription());
-            buttonConfirm.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    try {
-                        if (!editTextTitle.getText().toString().matches("")) {
-                            item.setTitle(editTextTitle.getText().toString());
-                            item.setDescription(editTextDescription.getText().toString());
-                            item.setDateStart(inputDate.getText().toString());
-                            item.setDateEnd(inputDate.getText().toString());
-                            editItem(item, adapter, listOfItems, pos);
-                            alert.dismiss();
-                            inputDateString = "";
-                            inputDateString2 = "";
-
-                        } else Toast.makeText(getActivity(),R.string.errorIntroduceTitle,Toast.LENGTH_SHORT).show();
-                    } catch (Exception e) {
-                        Toast.makeText(getActivity(),R.string.error,Toast.LENGTH_SHORT).show();
-                    }
-
-                }
-            });
-            final Button buttonDelete = (Button) promptView.findViewById(R.id.buttonDeleteAddItem);
-            buttonDelete.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    deleteItem(item, adapter, listOfItems, pos);
-                    inputDateString = "";
-                    inputDateString2 = "";
-                    alert.dismiss();
-                }
-            });
-            final Button buttonDuplicate = (Button) promptView.findViewById(R.id.buttonDuplicateAddItem);
-            buttonDuplicate.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    duplicateItem(item, adapter, listOfItems, pos);
-                    inputDateString = "";
-                    inputDateString2 = "";
-                    alert.dismiss();
-                }
-            });
             alert.show();
         } catch (Exception e) {
-            Toast.makeText(getActivity(),R.string.error,Toast.LENGTH_SHORT).show();
+            showToastError(e);
         }
     }
 
@@ -644,7 +396,9 @@ public class PrivateListFragment extends Fragment{
             buttonDelete.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    Section section = arrayOfArrays.get(pos);
                     arrayOfArrays.remove(pos);
+                    scrollView.getParent();
                     globalList.setLists(DataConverter.fromArrayListSection(arrayOfArrays));
                     database.updateItem(globalList);
                     scrollView.setVisibility(View.GONE);
@@ -672,7 +426,7 @@ public class PrivateListFragment extends Fragment{
     public void duplicateItem(Item item, ItemAdapter adapter, ArrayList listOfItems, int pos) {
         try {
 
-            Item itemDuplicated = new Item(item.getTitle(),item.getDescription(), item.getDateStart(), item.getDateEnd());
+            Item itemDuplicated = new Item(item.getTitle(),item.getDescription(), item.getDateStart(), item.getDateEnd(), item.getCategory(), item.getSubcategorySelected());
 
             //Comprueba si la cadena contiene algún número
             if (itemDuplicated.getTitle().matches(".*\\d+")) {
@@ -682,7 +436,7 @@ public class PrivateListFragment extends Fragment{
             }
             addItem(itemDuplicated, listOfItems, adapter, pos);
         } catch (Exception e) {
-            Toast.makeText(getActivity(),R.string.error,Toast.LENGTH_SHORT).show();
+            showToastError(e);
         }
     }
 
@@ -694,13 +448,12 @@ public class PrivateListFragment extends Fragment{
             System.out.println("Removed item -> " + item);
             countItemsToTitle(pos, list);
         } catch (Exception e) {
-            Toast.makeText(getActivity(),R.string.error,Toast.LENGTH_SHORT).show();
+            showToastError(e);
         }
     }
 
     public void editItem(Item item, ItemAdapter adapter, ArrayList list, int pos) {
         try {
-
             adapter.notifyItemChanged(list.indexOf(item));
             list.set(list.indexOf(item),item);
             updateGlobalList(pos, list);
@@ -743,45 +496,349 @@ public class PrivateListFragment extends Fragment{
 
             alert.show();
         } catch (Exception e) {
-            Toast.makeText(getActivity(),R.string.error,Toast.LENGTH_SHORT).show();
+            showToastError(e);
         }
     }
 
-    protected void addCategoryDialog() {
-        LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
-        View promptView = layoutInflater.inflate(R.layout.fragment_add_global_list, null);
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity()).setTitle(R.string.add_category);
-        alertDialogBuilder.setView(promptView);
-        alertDialogBuilder.setCancelable(false);
-        AlertDialog alert = alertDialogBuilder.create();
-        alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
-        alert.setCanceledOnTouchOutside(true);
-        final EditText editTextInputGlobalTitle = (EditText) promptView.findViewById(R.id.inputTitleGlobal);
+    protected void addCategoryDialog(int type) { //type 0 -> category // type 1 -> subcategory
+        try {
 
-        final Button buttonConfirm = (Button) promptView.findViewById(R.id.buttonConfirmGlobal);
-        buttonConfirm.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!editTextInputGlobalTitle.getText().toString().matches("")) {
-                    Category category = new Category(editTextInputGlobalTitle.getText().toString());
-                    categoryMethods.insert(category);
-                    categoriesArrayList.add(category);
-                    adapterSpinner.notifyDataSetChanged();
+            LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
+            View promptView = layoutInflater.inflate(R.layout.fragment_add_global_list, null);
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity()).setTitle(R.string.add_category);
+            alertDialogBuilder.setView(promptView);
+            alertDialogBuilder.setCancelable(false);
+            AlertDialog alert = alertDialogBuilder.create();
+            alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
+            alert.setCanceledOnTouchOutside(true);
+            final EditText editTextInputGlobalTitle = (EditText) promptView.findViewById(R.id.inputTitleGlobal);
+
+            final Button buttonConfirm = (Button) promptView.findViewById(R.id.buttonConfirmGlobal);
+            buttonConfirm.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (!editTextInputGlobalTitle.getText().toString().matches("")) {
+                        Category category = new Category(editTextInputGlobalTitle.getText().toString());
+                        if (type == 0) {
+                            categoryMethods.insert(category);
+                            categories.add(category);
+                            categoriesName.add(category.getName());
+                            adapterSpinnerCategory.notifyDataSetChanged();
+                            categorySpinner.setSelection(categories.size()-1);
+                        } else if (type == 1) {
+                            subCategories.add(category);
+                            ArrayList<Category> newList = new ArrayList(subCategories.subList(2, subCategories.size()));
+                            tempCategory.setArrayOfSubcategories(DataConverter.fromArrayListCategories(newList));
+                            adapterSpinnerSubcategory.notifyDataSetChanged();
+                            subCategorySpinner.setSelection(subCategories.size()-1);
+                            categoryMethods.update(tempCategory);
+                        }
+                        alert.dismiss();
+                    } else Toast.makeText(getContext(),R.string.errorIntroduceName ,Toast.LENGTH_SHORT).show();
+
+
+                }
+            });
+
+            final Button buttonCancel = (Button) promptView.findViewById(R.id.buttonCancelGlobal);
+            buttonCancel.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
                     alert.dismiss();
-                } else Toast.makeText(getContext(),R.string.errorIntroduceName ,Toast.LENGTH_SHORT).show();
+                }
+            });
 
-            }
-        });
+            alert.show();
+        } catch (Exception e) {
+            showToastError(e);
+        }
+    }
 
-        final Button buttonCancel = (Button) promptView.findViewById(R.id.buttonCancelGlobal);
-        buttonCancel.setOnClickListener(new View.OnClickListener() {
+    private void initDialogElements(MaterialAlertDialogBuilder builder, String title, DialogInterface.OnClickListener confirm, DialogInterface.OnClickListener delete, DialogInterface.OnClickListener duplicate) {
+
+        builder.setTitle(title);
+
+        builder.setPositiveButton(R.string.confirm,confirm);
+
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                alert.dismiss();
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
             }
         });
 
-        alert.show();
+        if (title.matches(getString(R.string.dialogEditItem))) {
+            builder.setNegativeButton(R.string.duplicate, duplicate);
+            builder.setNeutralButton(R.string.delete, delete);
+//            builder.setNeutralButtonIcon(getResources().getDrawable(R.drawable.ic_baseline_delete_24));
+        }
+    }
+
+    private void itemDetailDialog(MaterialAlertDialogBuilder builder, View promptView, androidx.appcompat.app.AlertDialog alert, ArrayList arrayIndividual, ItemAdapter adapter, int pos, Item item, int typeDialog) {
+        try {
+            Calendar mcurrentDate = Calendar.getInstance();
+
+            final int mYear = mcurrentDate.get(Calendar.YEAR),
+                    mMonth = mcurrentDate.get(Calendar.MONTH),
+                    mDay = mcurrentDate.get(Calendar.DAY_OF_MONTH);
+
+            editTextTitle = (EditText) promptView.findViewById(R.id.inputTitle);
+            editTextDescription = (EditText) promptView.findViewById(R.id.inputDescription);
+            inputDateStart = promptView.findViewById(R.id.inputDate);
+            inputDateEnd = promptView.findViewById(R.id.inputDate2);
+
+            final TextView tv_categoryText = (TextView) promptView.findViewById(R.id.tv_spinner_subcategory);
+
+            categorySpinner = (Spinner) promptView.findViewById(R.id.categorySpinner);
+            subCategorySpinner = (Spinner) promptView.findViewById(R.id.subcategorySpinner);
+            categorySpinner.setAdapter(adapterSpinnerCategory);
+            subCategorySpinner.setEnabled(true);
+            subCategorySpinner.setAdapter(adapterSpinnerSubcategory);
+            subCategorySpinner.setVisibility(View.GONE);
+            tv_categoryText.setVisibility(View.GONE);
+            categorySpinner.setSelection(1); // Selecciona el segundo índice, que es el general
+
+
+
+            categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+
+                    if (i == 0) {
+                        addCategoryDialog(0);
+                        subCategorySpinner.setVisibility(View.GONE);
+                        tv_categoryText.setVisibility(View.GONE);
+                    } else if (i != 1) {
+                        subCategorySpinner.setVisibility(View.VISIBLE);
+                        tv_categoryText.setVisibility(View.VISIBLE);
+                        tempCategory = (Category) categorySpinner.getSelectedItem();
+                        initializeSubcategories();
+
+                        adapterSpinnerSubcategory.notifyDataSetChanged();
+
+                        if (item != null) {
+                            if (item.getSubcategorySelected() == null || item.getSubcategorySelected().equals("")) subCategorySpinner.setSelection(1);
+                            else if (item.getCategory().getArrayOfSubcategories() != null && item.getCategory().getArrayOfSubcategories().contains(item.getSubcategorySelected().getName())) subCategorySpinner.setSelection(item.getSubcategorySelected().getId()+2);
+                            else subCategorySpinner.setSelection(1);
+                        } else subCategorySpinner.setSelection(1);
+
+
+                    } else {
+                        subCategorySpinner.setVisibility(View.GONE);
+                        tv_categoryText.setVisibility(View.GONE);
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> adapterView) {
+                    subCategorySpinner.setVisibility(View.GONE);
+                    tv_categoryText.setVisibility(View.GONE);
+                }
+            });
+
+            // Se establece el evento de selección en el spinner de subcategorías
+            subCategorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    if (position == 0) {
+                        addCategoryDialog(1);
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+                    // Código a ejecutar cuando no se selecciona ninguna subcategoría
+                }
+            });
+
+
+            if (typeDialog == EDIT_DIALOG) setEditData(item);
+
+            inputDateStart.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    DatePickerDialog mDatePicker1 = new DatePickerDialog(getActivity(),
+                            new DatePickerDialog.OnDateSetListener() {
+                                public void onDateSet(DatePicker datepicker, int selectedyear, int selectedmonth, int selectedday) {
+                                    inputDateStart.setText(formatStringDate(selectedyear, selectedmonth+1, selectedday));
+                                }
+                            }, mYear, mMonth, mDay);
+                    mDatePicker1.setButton(DatePickerDialog.BUTTON_NEGATIVE, getString(R.string.delete), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            inputDateStart.setText("");
+                            inputDateStringStart = "";
+                        }
+                    });
+                    mDatePicker1.show();
+                }
+            });
+
+            inputDateEnd.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    DatePickerDialog mDatePicker2 = new DatePickerDialog(getActivity(),
+                            new DatePickerDialog.OnDateSetListener() {
+                                public void onDateSet(DatePicker datepicker, int selectedyear, int selectedmonth, int selectedday) {
+                                    inputDateEnd.setText(formatStringDate(selectedyear, selectedmonth+1, selectedday));
+                                }
+                            }, mYear, mMonth, mDay);
+                    mDatePicker2.setButton(DatePickerDialog.BUTTON_NEGATIVE, getString(R.string.delete), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            inputDateEnd.setText("");
+                            inputDateStringEnd = "";
+                        }
+                    });
+                    mDatePicker2.show();
+                }
+            });
+        } catch (Exception e) {
+            showToastError(e);
+        }
+    }
+
+    public void showToastError(Exception e) {
+        Toast.makeText(getActivity(),R.string.error,Toast.LENGTH_SHORT).show();
+        System.out.println("ERROR: " + e.getLocalizedMessage());
+    }
+
+    public void createDialogButtons(int pos, ArrayList listOfItems, ItemAdapter adapter, MaterialAlertDialogBuilder builder, String title, View view) {
+        try {
+
+            DialogInterface.OnClickListener acceptButton =  new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if (editTextTitle != null && !editTextTitle.getText().toString().matches("")) {
+                        if (subCategorySpinner.getSelectedItem() == null) {
+                            addItem(new Item(editTextTitle.getText().toString(), editTextDescription.getText().toString(), inputDateStart.getText().toString()  , inputDateEnd.getText().toString(), (Category) categorySpinner.getSelectedItem()), listOfItems, adapter, pos);
+                        } else addItem(new Item(editTextTitle.getText().toString(), editTextDescription.getText().toString(), inputDateStart.getText().toString()  , inputDateEnd.getText().toString(), (Category) categorySpinner.getSelectedItem(), (Category) subCategorySpinner.getSelectedItem()), listOfItems, adapter, pos);
+                        alert.dismiss();
+                        inputDateStringStart = "";
+                        inputDateStringEnd = "";
+                    } else Toast.makeText(getActivity(),R.string.errorIntroduceTitle,Toast.LENGTH_SHORT).show();
+                }
+            };
+
+            initDialogElements(builder, title, acceptButton, null, null);
+            alert = builder.create();
+            alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
+            alert.setCanceledOnTouchOutside(true);
+            itemDetailDialog(builder, view, alert, listOfItems, adapter, pos, null, INPUT_DIALOG);
+        } catch (Exception e) {
+            showToastError(e);
+        }
+    }
+
+    public void editDialogButtons(Item item, int pos, ArrayList listOfItems, ItemAdapter adapter, MaterialAlertDialogBuilder builder, String title, View view) {
+        try {
+
+            DialogInterface.OnClickListener acceptButton =  new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if (!editTextTitle.getText().toString().matches("")) {
+                        item.setTitle(editTextTitle.getText().toString());
+                        item.setDescription(editTextDescription.getText().toString());
+                        item.setDateStart(inputDateStart.getText().toString());
+                        item.setDateEnd(inputDateEnd.getText().toString());
+                        item.setCategory((Category) categorySpinner.getSelectedItem());
+                        if (subCategorySpinner.getSelectedItem() != null) item.setSubcategorySelected((Category) subCategorySpinner.getSelectedItem());
+                        editItem(item, adapter, listOfItems, pos);
+                        alert.dismiss();
+                        inputDateStringStart = "";
+                        inputDateStringEnd = "";
+
+                    } else Toast.makeText(getActivity(),R.string.errorIntroduceTitle,Toast.LENGTH_SHORT).show();
+                }
+            };
+
+            DialogInterface.OnClickListener duplicateButton =  new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    duplicateItem(item, adapter, listOfItems, pos);
+                    inputDateStringStart = "";
+                    inputDateStringEnd = "";
+                    alert.dismiss();
+                }
+            };
+
+            DialogInterface.OnClickListener deleteButton =  new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    deleteItem(item, adapter, listOfItems, pos);
+                    inputDateStringStart = "";
+                    inputDateStringEnd = "";
+                    alert.dismiss();
+                }
+            };
+
+            initDialogElements(builder, title, acceptButton, deleteButton, duplicateButton);
+            alert = builder.create();
+            alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
+            alert.setCanceledOnTouchOutside(true);
+            itemDetailDialog(builder, view, alert, listOfItems, adapter, pos, item,EDIT_DIALOG);
+        } catch (Exception e) {
+            showToastError(e);
+        }
+    }
+
+    public String formatStringDate(int selectedyear, int selectedmonth, int selectedday) {
+        try {
+            DecimalFormat twoDigitFormat = new DecimalFormat("00");
+            return twoDigitFormat.format(selectedday) + "/" + twoDigitFormat.format(selectedmonth) + "/" + selectedyear;
+
+        } catch (Exception e) {
+            showToastError(e);
+            return null;
+        }
+    }
+
+    public void formatStringDateFromString(String date, EditText inputDateVariable, String inputDateStringVariable) {
+        try {
+
+            LocalDate localDate = LocalDate.parse(date, formatter);
+            int day = localDate.getDayOfMonth();
+            int month = localDate.getMonthValue();
+            int year = localDate.getYear();
+            inputDateStringVariable = formatStringDate(year, month, day);
+            inputDateVariable.setText(inputDateStringVariable);
+        } catch (Exception e) {
+            showToastError(e);
+        }
+    }
+
+    public void setEditData(Item item) {
+        try {
+            tempItem = item;
+
+            if (!item.dateStart.matches("")) {
+                formatStringDateFromString(item.getDateStart(), inputDateStart, inputDateStringStart);
+            }
+
+            if (!item.dateEnd.matches("")) {
+                formatStringDateFromString(item.getDateEnd(), inputDateEnd, inputDateStringEnd);
+            }
+
+            editTextTitle.setText(item.getTitle());
+
+            editTextDescription.setText(item.getDescription());
+
+            if (categoriesName.contains(item.getCategory().getName())) categorySpinner.setSelection(categoriesName.indexOf(item.getCategory().getName())); // Selecciona el índice de la categoría del item
+            tempCategory = item.getCategory();
+            initializeSubcategories();
+            if (item.getSubcategorySelected() != null && !item.getSubcategorySelected().equals("")) subCategorySpinner.setSelection(adapterSpinnerSubcategory.getPosition(item.getSubcategorySelected()));
+
+        } catch (Exception e) {
+            showToastError(e);
+        }
+    }
+
+    public void initializeSubcategories() {
+        subCategories.clear();
+        subCategories.add(new Category(getContext().getString(R.string.add_category)));
+        subCategories.add(new Category(getContext().getString(R.string.general)));
+        if (tempCategory.getArrayOfSubcategories() != null && tempCategory.getArrayOfSubcategories() != (""))
+            subCategories.addAll(DataConverter.fromStringCategories(tempCategory.getArrayOfSubcategories()));
     }
 
 
