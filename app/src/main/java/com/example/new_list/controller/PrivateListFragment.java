@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -31,6 +32,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.new_list.MainActivity;
 import com.example.new_list.R;
 import com.example.new_list.database.CategoryMethods;
 import com.example.new_list.database.GlobalMethods;
@@ -147,10 +149,11 @@ public class PrivateListFragment extends Fragment{
             //Si hay columnas, empieza a generarlas
             if (mColumnCount > 0) {
                 System.out.println("--------- LISTAS ----------");
-                for (int i = 0; i < mColumnCount; i++) {
-                    ArrayList<Item> arrayOfItemsPrivate = DataConverter.changeItemType(arrayOfArrays.get(i).getListOfItems());
-                    generateGlobalView(i, arrayOfItemsPrivate, arrayOfArrays.get(i).getTitle());
-                }
+//                for (int i = 0; i < mColumnCount; i++) {
+//                    ArrayList<Item> arrayOfItemsPrivate = DataConverter.changeItemType(arrayOfArrays.get(i).getListOfItems());
+//                    generateGlobalView(i, arrayOfItemsPrivate, arrayOfArrays.get(i).getTitle());
+//                }
+                generateGlobalViewFilter(categoryMethods.getCategoryById(1));
             }
 
             // Crear una lista de strings con las categorías
@@ -178,10 +181,13 @@ public class PrivateListFragment extends Fragment{
 //                }
             }
 
+            toolbarMenuFilter();
+
         } catch (Exception e) {
             showToastError(e);
 
         }
+
         return view;
     }
 
@@ -208,6 +214,31 @@ public class PrivateListFragment extends Fragment{
             generateGlobalView(pos, arrayOfItemsPrivate, arrayOfArrays.get(pos).getTitle());
         } catch (Exception e) {
             showToastError(e);
+        }
+    }
+
+    public void generateGlobalViewFilter(Category category) {
+        for (int i = 0; i < mColumnCount; i++) {
+            ArrayList<Item> arrayOfItemsPrivate = DataConverter.changeItemType(arrayOfArrays.get(i).getListOfItems());
+            ArrayList<Item> arrayOfItemsPrivateFilter = arrayOfItemsPrivate;
+            generateGlobalView(i, arrayOfItemsPrivateFilter, arrayOfArrays.get(i).getTitle());
+        }
+    }
+
+    public void filterList(ArrayList<Item> arrayIndividual, ArrayList<ItemAdapter> arrayOfAdapters, int pos) {
+        ArrayList<Item> tempList = new ArrayList<Item>();
+        for (Item item : arrayIndividual) {
+            if (item.getTitle().startsWith("a")) {
+                tempList.add(item);
+            }
+        }
+        arrayOfAdapters.get(pos).updateData(tempList);
+    }
+
+    public void filterAllLists() {
+        for (int i = 0; i < mColumnCount; i++) {
+            ArrayList<Item> arrayOfItemsPrivate = DataConverter.changeItemType(arrayOfArrays.get(i).getListOfItems());
+            filterList(arrayOfItemsPrivate, arrayOfAdapters, i);
         }
     }
 
@@ -839,6 +870,17 @@ public class PrivateListFragment extends Fragment{
         subCategories.add(new Category(getContext().getString(R.string.general)));
         if (tempCategory.getArrayOfSubcategories() != null && tempCategory.getArrayOfSubcategories() != (""))
             subCategories.addAll(DataConverter.fromStringCategories(tempCategory.getArrayOfSubcategories()));
+    }
+
+    public void toolbarMenuFilter() {
+        MainActivity mainActivity = new MainActivity();
+        mainActivity.testMenu(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                filterAllLists();
+                return false;
+            }
+        });
     }
 
 

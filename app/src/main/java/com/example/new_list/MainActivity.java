@@ -24,6 +24,7 @@ import com.example.new_list.controller.PrivateListFragment;
 import com.example.new_list.controller.SettingsFragment;
 import com.example.new_list.database.GlobalMethods;
 import com.example.new_list.helper.DataConverter;
+import com.example.new_list.model.Category;
 import com.example.new_list.model.GlobalList;
 import com.example.new_list.model.Item;
 import com.example.new_list.model.Section;
@@ -35,9 +36,10 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     private DrawerLayout mDrawer;
-    private Toolbar toolbar;
+    private static Toolbar toolbar;
     public static NavigationView navigationView;
     private GlobalMethods database;
+    private PrivateListFragment privateListFragment;
     private ArrayList<GlobalList> arrayLists;
     private final int DELETE_DIALOG = 0, ADD_DIALOG = 1;
 
@@ -48,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        privateListFragment = new PrivateListFragment();
 
         database = new GlobalMethods(this);
         // Set a Toolbar to replace the ActionBar.
@@ -201,6 +205,7 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+
     }
 
     public void clearGlobalListMenu() {
@@ -337,13 +342,11 @@ public class MainActivity extends AppCompatActivity {
         if (arrayOfArrays.size() != 0 && arrayOfArrays.get(0).getListOfItems().size() != 0) {
             // Crear un mapa para almacenar los contadores de categorías
             Map<String, Integer> categoryCounts = new HashMap<>();
-
+            Map<String, Map<String, Integer>> subcategoryCounts = new HashMap<>();
             for (int i = 0; i < arrayOfArrays.size(); i++) {
                 ArrayList<Item> arrayOfItemsPrivate = DataConverter.changeItemType(arrayOfArrays.get(i).getListOfItems());
-                String categoryName = "";
                 for (Item item:arrayOfItemsPrivate) {
-                    if (item.getCategory() != null && categories.contains(item.getCategory().getName())) categoryName = item.getCategory().getName();
-                    else categoryName = categories.get(1).getName();
+                    String categoryName = item.getCategory().getName();
 
                     // Si ya se ha contado una ocurrencia de esta categoría, incrementar el contador
                     if (categoryCounts.containsKey(categoryName)) {
@@ -353,15 +356,44 @@ public class MainActivity extends AppCompatActivity {
                     else {
                         categoryCounts.put(categoryName, 1);
                     }
+
+                    if (item.getSubcategorySelected() != null) {
+                        String subcategoryName = item.getSubcategorySelected().getName();
+                        Map<String, Integer> subcategoryCountsForCategory;
+                        if (subcategoryCounts.containsKey(categoryName)) {
+                            subcategoryCountsForCategory = subcategoryCounts.get(categoryName);
+                        } else {
+                            subcategoryCountsForCategory = new HashMap<>();
+                            subcategoryCounts.put(categoryName, subcategoryCountsForCategory);
+                        }
+
+                        // Si ya se ha contado una ocurrencia de esta subcategoría, incrementar el contador
+                        if (subcategoryCountsForCategory.containsKey(subcategoryName)) {
+                            subcategoryCountsForCategory.put(subcategoryName, subcategoryCountsForCategory.get(subcategoryName) + 1);
+                        }
+                        // Si no, agregar una nueva entrada al mapa con un contador inicial de 1
+                        else {
+                            subcategoryCountsForCategory.put(subcategoryName, 1);
+                        }
+                    }
                 }
             }
 
             // Imprimir los resultados
-            String resultado = "";
+            String statsString = "";
             for (Map.Entry<String, Integer> entry : categoryCounts.entrySet()) {
-                resultado = resultado + "\n" + entry.getKey() + ": " + entry.getValue();
+                if (statsString != "") statsString = statsString + "\n";
+                statsString = statsString + entry.getKey() + ": " + entry.getValue() + "";
+                Map<String, Integer> subcategoryCountsForCategory = subcategoryCounts.get(entry.getKey());
+                if (subcategoryCountsForCategory != null) {
+                    for (Map.Entry<String, Integer> entrySub : subcategoryCountsForCategory.entrySet()) {
+                        if (!entrySub.getKey().toString().matches(getString(R.string.add_category).toString()) && !entrySub.getKey().toString().matches(getString(R.string.general).toString())) {
+                            statsString = statsString + "\n     " + entrySub.getKey() + ": " + entrySub.getValue();
+                        }
+                    }
+                }
             }
-            stats.setText(resultado);
+            stats.setText(statsString);
         } else {
             stats.setText(R.string.show_stats_view);
         }
@@ -375,6 +407,12 @@ public class MainActivity extends AppCompatActivity {
 
         alert.show();
     }
+
+    public void testMenu(MenuItem.OnMenuItemClickListener onMenuItemClickListener) {
+        toolbar.getMenu().add("filtro").setOnMenuItemClickListener(onMenuItemClickListener
+        );
+    }
+
 
 
 }

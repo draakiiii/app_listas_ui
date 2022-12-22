@@ -21,7 +21,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
         void onItemClick(Item item);
     }
 
-    private final ArrayList<Item> items;
+    private ArrayList<Item> items;
     private final OnItemClickListener listener;
 
     public ItemAdapter(ArrayList<Item> items, OnItemClickListener listener) {
@@ -40,6 +40,11 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
 
     @Override public int getItemCount() {
         return items.size();
+    }
+    // Agrega el método updateData para actualizar la lista de elementos del Adapter
+    public void updateData(ArrayList<Item> items) {
+        this.items = items;
+        notifyDataSetChanged();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -96,5 +101,8 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
                 System.out.println("!!!!!!!!!!! ERROR ITEM ADAPTER: " + e.getLocalizedMessage());
             }
         }
+
+
+
     }
 }
