@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -44,12 +45,14 @@ import com.example.new_list.model.Item;
 import com.example.new_list.model.Section;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import java.sql.SQLOutput;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -113,6 +116,7 @@ public class PrivateListFragment extends Fragment{
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_private_list_list, container, false);
         try {
+
             toPos = -1;
             fromPos = -1;
             countButton = new AtomicInteger(0);
@@ -149,11 +153,7 @@ public class PrivateListFragment extends Fragment{
             //Si hay columnas, empieza a generarlas
             if (mColumnCount > 0) {
                 System.out.println("--------- LISTAS ----------");
-//                for (int i = 0; i < mColumnCount; i++) {
-//                    ArrayList<Item> arrayOfItemsPrivate = DataConverter.changeItemType(arrayOfArrays.get(i).getListOfItems());
-//                    generateGlobalView(i, arrayOfItemsPrivate, arrayOfArrays.get(i).getTitle());
-//                }
-                generateGlobalViewFilter(categoryMethods.getCategoryById(1));
+                generateGlobalViewFilter();
             }
 
             // Crear una lista de strings con las categorías
@@ -174,15 +174,9 @@ public class PrivateListFragment extends Fragment{
             subcategoriesName = new ArrayList<>();
             for (Category category:categories) {
                 categoriesName.add(category.getName());
-//                if (DataConverter.fromStringCategories(category.getArrayOfSubcategories()) != null){
-//                    for (Category subcategory : DataConverter.fromStringCategories(category.getArrayOfSubcategories())) {
-//                        subcategoriesName.add(subcategory.getName());
-//                    }
-//                }
             }
 
             toolbarMenuFilter();
-
         } catch (Exception e) {
             showToastError(e);
 
@@ -217,28 +211,56 @@ public class PrivateListFragment extends Fragment{
         }
     }
 
-    public void generateGlobalViewFilter(Category category) {
+    public void generateGlobalViewFilter() {
         for (int i = 0; i < mColumnCount; i++) {
             ArrayList<Item> arrayOfItemsPrivate = DataConverter.changeItemType(arrayOfArrays.get(i).getListOfItems());
-            ArrayList<Item> arrayOfItemsPrivateFilter = arrayOfItemsPrivate;
-            generateGlobalView(i, arrayOfItemsPrivateFilter, arrayOfArrays.get(i).getTitle());
+            generateGlobalView(i, arrayOfItemsPrivate, arrayOfArrays.get(i).getTitle());
         }
     }
 
-    public void filterList(ArrayList<Item> arrayIndividual, ArrayList<ItemAdapter> arrayOfAdapters, int pos) {
+    public void filterList(ArrayList<Item> arrayIndividual, ArrayList<ItemAdapter> arrayOfAdapters, int pos, String filterType, String filterValue) {
+
+        ArrayList<ArrayList> arrayList = new ArrayList<>();
+        GlobalList globalList = new GlobalList(arrayIndividual.get(pos), DataConverter.fromArrayList(arrayList));
+
         ArrayList<Item> tempList = new ArrayList<Item>();
         for (Item item : arrayIndividual) {
-            if (item.getTitle().startsWith("a")) {
-                tempList.add(item);
+            switch (filterType) {
+                case "title":
+                    if (item.getTitle().contains(filterValue)) {
+                        tempList.add(item);
+                    }
+                    break;
+                case "category":
+                    if (item.getCategory().toString().equals(filterValue)) {
+                        tempList.add(item);
+                    }
+                    break;
+                case "dateStart":
+                    Date dateStartItem = (Date) formatter.parse(item.getDateStart());
+                    Date dateStartFilter = (Date) formatter.parse(filterValue);
+                    if (dateStartItem.compareTo(dateStartFilter) >= 0) {
+                        tempList.add(item);
+                    }
+                    break;
+                case "dateEnd":
+                    Date dateEndItem = (Date) formatter.parse(item.getDateEnd());
+                    Date dateEndFilter = (Date) formatter.parse(filterValue);
+                    if (dateEndItem.compareTo(dateEndFilter) <= 0) {
+                        tempList.add(item);
+                    }
+                    break;
+                default:
+                    System.out.println("default message");
             }
         }
         arrayOfAdapters.get(pos).updateData(tempList);
     }
 
-    public void filterAllLists() {
+    public void filterAllLists(String filterType, String filterValue) {
         for (int i = 0; i < mColumnCount; i++) {
             ArrayList<Item> arrayOfItemsPrivate = DataConverter.changeItemType(arrayOfArrays.get(i).getListOfItems());
-            filterList(arrayOfItemsPrivate, arrayOfAdapters, i);
+            filterList(arrayOfItemsPrivate, arrayOfAdapters, i, filterType, filterValue);
         }
     }
 
@@ -874,14 +896,15 @@ public class PrivateListFragment extends Fragment{
 
     public void toolbarMenuFilter() {
         MainActivity mainActivity = new MainActivity();
-        mainActivity.testMenu(new MenuItem.OnMenuItemClickListener() {
+        mainActivity.addMenuItem(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                filterAllLists();
+                filterAllLists("title", "ghoul");
+                mainActivity.menuCross(globalList);
+
                 return false;
             }
-        });
+        }, "filtrar");
     }
-
 
 }

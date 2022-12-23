@@ -1,13 +1,13 @@
 package com.example.new_list;
 
-import static com.example.new_list.controller.PrivateListFragment.categories;
-
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -24,7 +24,6 @@ import com.example.new_list.controller.PrivateListFragment;
 import com.example.new_list.controller.SettingsFragment;
 import com.example.new_list.database.GlobalMethods;
 import com.example.new_list.helper.DataConverter;
-import com.example.new_list.model.Category;
 import com.example.new_list.model.GlobalList;
 import com.example.new_list.model.Item;
 import com.example.new_list.model.Section;
@@ -36,7 +35,7 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     private DrawerLayout mDrawer;
-    private static Toolbar toolbar;
+    private static Toolbar toolbar, oldToolbar;
     public static NavigationView navigationView;
     private GlobalMethods database;
     private PrivateListFragment privateListFragment;
@@ -56,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
         database = new GlobalMethods(this);
         // Set a Toolbar to replace the ActionBar.
         toolbar = (Toolbar) findViewById(R.id.toolbar);
+
         setSupportActionBar(toolbar);
         // This will display an Up icon (<-), we will replace it with hamburger later
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -87,11 +87,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         System.out.println("------- LISTAS GLOBALES --------");
-        for (GlobalList globalListNew : arrayLists) {
-            addGlobalListToMenu(globalListNew);
-            System.out.println(globalListNew);
-        }
-        mDrawer.close();
+        fillLeftMenu();
         return true;
     }
 
@@ -157,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
         setTitle(globalList.getName());
         Bundle bundle = new Bundle();
         bundle.putInt("globallist", globalList.getId());
-        mDrawer.close();
+        if (mDrawer != null) mDrawer.close();
         getSupportFragmentManager().beginTransaction()
                 .setReorderingAllowed(true)
                 .replace(R.id.flContent, PrivateListFragment.class,bundle)
@@ -408,11 +404,51 @@ public class MainActivity extends AppCompatActivity {
         alert.show();
     }
 
-    public void testMenu(MenuItem.OnMenuItemClickListener onMenuItemClickListener) {
-        toolbar.getMenu().add("filtro").setOnMenuItemClickListener(onMenuItemClickListener
-        );
+    public void addMenuItem(MenuItem.OnMenuItemClickListener onMenuItemClickListener, String text) {
+        toolbar.getMenu().add(text).setOnMenuItemClickListener(onMenuItemClickListener);
     }
 
+    public void menuCross(GlobalList globalList) {
+        toolbar.getMenu().clear();
+        toolbar.getMenu().add("Close");
+        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                System.out.println("TESTTESTETESADALDLASDAKJSDLÑASDLJASDLKJSADÑLKASASD");
+                PrivateListFragment privateListFragment = new PrivateListFragment();
+                privateListFragment.generateGlobalViewFilter();
+                return false;
+            }
+        });
+//        if (toolbar.getTitle() != "view mode") {
+//
+//            toolbar.setNavigationIcon(R.drawable.ic_baseline_close_24);
+//            toolbar.setTitle("view mode");
+//
+//            // Ocultar el menú de la toolbar
+//            toolbar.getMenu().clear();
+//
+//            toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//                    toolbar.setTitle(globalList.getName());
+//                    setSupportActionBar(toolbar);
+//                    // This will display an Up icon (<-), we will replace it with hamburger later
+//                    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//                    toolbar.inflateMenu(R.menu.menu_private);
+//                    openGlobalList(globalList);
+//                }
+//            });
+//
+//        } else Toast.makeText(getBaseContext(), "Debes salir del modo visualización", Toast.LENGTH_SHORT).show();
+    }
 
+    public void fillLeftMenu() {
+        for (GlobalList globalListNew : arrayLists) {
+            addGlobalListToMenu(globalListNew);
+            System.out.println(globalListNew);
+        }
+        mDrawer.close();
+    }
 
 }
