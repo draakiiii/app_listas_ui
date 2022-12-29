@@ -53,4 +53,11 @@
     <string name="delete_category">Borrar categoría</string>
     <string name="choose_category">Elige una categoría</string>
     <string name="choose_subcategory">Elige una subcategoría</string>
+    <string name="dialog_title_close_filter">Restablecer filtro</string>
+    <string name="dialog_message_close_filter">¿Desea restablecer el filtro para poder realizar operaciones en la lista?</string>
+    <string name="import_export_lists">Importar / exportar datos</string>
+    <string name="export_lists">Exportar listas</string>
+    <string name="import_lists">Importar listas</string>
+    <string name="export_import_message">¿Quieres importar datos de un archivo o exportar los datos actuales a un archivo?</string>
+    <string name="file_save_download">Archivo guardado en la carpeta de descargas</string>
 </resources>

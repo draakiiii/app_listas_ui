@@ -91,6 +91,7 @@ public class PrivateListFragment extends Fragment{
     private final int EDIT_DIALOG = 0, INPUT_DIALOG = 1;
     private DateTimeFormatter formatter;
     private Category tempCategory;
+    private static boolean filterOn, dialogOnScreen;
 
     public PrivateListFragment() {
     }
@@ -115,8 +116,8 @@ public class PrivateListFragment extends Fragment{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_private_list_list, container, false);
-        try {
 
+        try {
             toPos = -1;
             fromPos = -1;
             countButton = new AtomicInteger(0);
@@ -126,6 +127,8 @@ public class PrivateListFragment extends Fragment{
             height = displayMetrics.heightPixels;
             width = displayMetrics.widthPixels;
             width = (width / 100) * 90;
+            filterOn = false;
+            dialogOnScreen = false;
             formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             mDrawer = (DrawerLayout) getActivity().findViewById(R.id.drawer_layout);
             linearLayout = view.findViewById(R.id.linearLayoutListPrivate);
@@ -177,6 +180,7 @@ public class PrivateListFragment extends Fragment{
             }
 
             toolbarMenuFilter();
+
         } catch (Exception e) {
             showToastError(e);
 
@@ -212,6 +216,7 @@ public class PrivateListFragment extends Fragment{
     }
 
     public void generateGlobalViewFilter() {
+        filterOn = false;
         for (int i = 0; i < mColumnCount; i++) {
             ArrayList<Item> arrayOfItemsPrivate = DataConverter.changeItemType(arrayOfArrays.get(i).getListOfItems());
             generateGlobalView(i, arrayOfItemsPrivate, arrayOfArrays.get(i).getTitle());
@@ -221,9 +226,9 @@ public class PrivateListFragment extends Fragment{
     public void filterList(ArrayList<Item> arrayIndividual, ArrayList<ItemAdapter> arrayOfAdapters, int pos, String filterType, String filterValue) {
 
         ArrayList<ArrayList> arrayList = new ArrayList<>();
-        GlobalList globalList = new GlobalList(arrayIndividual.get(pos), DataConverter.fromArrayList(arrayList));
-
+        GlobalList globalList = new GlobalList(arrayIndividual.get(pos).getTitle(), DataConverter.fromArrayList(arrayList));
         ArrayList<Item> tempList = new ArrayList<Item>();
+
         for (Item item : arrayIndividual) {
             switch (filterType) {
                 case "title":
@@ -264,6 +269,7 @@ public class PrivateListFragment extends Fragment{
         }
     }
 
+
     public void generateGlobalView(int pos, ArrayList<Item> arrayIndividual, String title) {
         try {
             LinearLayout linearTitle = new LinearLayout(getActivity(), null, R.style.LinearLayoutMargin);
@@ -274,7 +280,22 @@ public class PrivateListFragment extends Fragment{
             tv_private_title.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    showEditDialogPrivateName(pos, arrayIndividual, scrollView, tv_private_title);
+                    if (filterOn && !dialogOnScreen) {
+                        dialogOnScreen = true;
+                        filterDialogBoolean (new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                ((MainActivity) getActivity()).openGlobalList(globalList);
+//                            showEditDialogPrivateName(pos, arrayIndividual, scrollView, tv_private_title);
+                            }
+                        });
+                    }
+
+                    else {
+                        showEditDialogPrivateName(pos, arrayIndividual, scrollView, tv_private_title);
+                        dialogOnScreen = false;
+                    }
+
                 }
             });
             tv_private_title.setText(title);
@@ -327,7 +348,21 @@ public class PrivateListFragment extends Fragment{
                 @SuppressLint("ResourceType")
                 @Override
                 public void onItemClick(Item item) {
-                    showEditDialog(item, arrayOfAdapters.get(pos), arrayIndividual, pos);
+                    if (filterOn && !dialogOnScreen) {
+                        dialogOnScreen = true;
+                        filterDialogBoolean (new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                ((MainActivity) getActivity()).openGlobalList(globalList);
+//                            showEditDialog(item, arrayOfAdapters.get(pos), arrayIndividual, pos);
+                            }
+                        });
+                    }
+
+                    else {
+                        showEditDialog(item, arrayOfAdapters.get(pos), arrayIndividual, pos);
+                        dialogOnScreen = false;
+                    }
                 }
             }));
 
@@ -337,18 +372,41 @@ public class PrivateListFragment extends Fragment{
                 @SuppressLint("ResourceType")
                 @Override
                 public void onClick(View v) {
-                    showInputDialog(arrayIndividual, arrayOfAdapters.get(pos), pos);
+                    if (filterOn && !dialogOnScreen) {
+                        dialogOnScreen = true;
+                        filterDialogBoolean (new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                ((MainActivity) getActivity()).openGlobalList(globalList);
+                            }
+                        });
+                    } else {
+                        showInputDialog(arrayIndividual, arrayOfAdapters.get(pos), pos);
+                        dialogOnScreen = false;
+                    }
                 }
             });
 
             simpleCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN | ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT , 0) {
                 @Override
                 public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                    int toPos = target.getBindingAdapterPosition();
-                    int fromPos = viewHolder.getBindingAdapterPosition();
-                    Collections.swap(arrayIndividual, fromPos, toPos);
-                    arrayOfAdapters.get(lastButton).notifyItemMoved(fromPos,toPos);
-                    updateGlobalList(pos, arrayIndividual);
+                    if (filterOn && !dialogOnScreen) {
+                        dialogOnScreen = true;
+                        filterDialogBoolean(new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                ((MainActivity) getActivity()).openGlobalList(globalList);
+                            }
+                        });
+                    } else {
+                        dialogOnScreen = false;
+                        int toPos = target.getBindingAdapterPosition();
+                        int fromPos = viewHolder.getBindingAdapterPosition();
+                        Collections.swap(arrayIndividual, fromPos, toPos);
+                        arrayOfAdapters.get(lastButton).notifyItemMoved(fromPos,toPos);
+                        updateGlobalList(pos, arrayIndividual);
+                        return false;
+                    }
                     return false;
                 }
 
@@ -356,8 +414,10 @@ public class PrivateListFragment extends Fragment{
                 public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 }
             };
-            itemTouchHelper = new ItemTouchHelper(simpleCallback);
-            itemTouchHelper.attachToRecyclerView(arrayOfRecycler.get(lastButton));
+            if (!filterOn) {
+                itemTouchHelper = new ItemTouchHelper(simpleCallback);
+                itemTouchHelper.attachToRecyclerView(arrayOfRecycler.get(lastButton));
+            }
             updateGlobalList(pos, arrayIndividual);
         } catch (Exception e) {
             showToastError(e);
@@ -418,6 +478,21 @@ public class PrivateListFragment extends Fragment{
         }
     }
 
+    public void filterDialogBoolean(DialogInterface.OnClickListener ok) {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this.getActivity(), R.style.CustomMaterialDialog).setTitle(R.string.dialog_title_close_filter);
+        builder.setTitle(R.string.dialog_title_close_filter);
+        builder.setMessage(R.string.dialog_message_close_filter);
+        builder.setPositiveButton(R.string.confirm, ok);
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        androidx.appcompat.app.AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
     protected void showEditDialogPrivateName(int pos, ArrayList list, ScrollView scrollView, Button tv_private_title) {
         try {
 
@@ -469,7 +544,6 @@ public class PrivateListFragment extends Fragment{
 //                alert.dismiss();
 //            }
 //        });
-
             alert.show();
         } catch (Exception e) {
             System.out.println(e.getLocalizedMessage());
@@ -512,7 +586,7 @@ public class PrivateListFragment extends Fragment{
             updateGlobalList(pos, list);
             System.out.println("Updated item -> " + item);
         } catch (Exception e) {
-            Toast.makeText(getActivity(),R.string.error,Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -895,13 +969,12 @@ public class PrivateListFragment extends Fragment{
     }
 
     public void toolbarMenuFilter() {
-        MainActivity mainActivity = new MainActivity();
-        mainActivity.addMenuItem(new MenuItem.OnMenuItemClickListener() {
+        ((MainActivity) getActivity()).addMenuItem(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 filterAllLists("title", "ghoul");
-                mainActivity.menuCross(globalList);
-
+                ((MainActivity) getActivity()).menuCross(globalList);
+                filterOn = true;
                 return false;
             }
         }, "filtrar");

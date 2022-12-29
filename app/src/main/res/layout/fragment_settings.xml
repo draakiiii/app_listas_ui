@@ -16,7 +16,6 @@
         android:textSize="16sp"
         android:padding="16dp"
         style="@style/Widget.MaterialComponents.Button"/>
-
     <TextView
         android:id="@+id/btn_delete_all"
         android:layout_width="match_parent"
@@ -26,8 +25,7 @@
         android:textAlignment="textStart"
         android:textSize="16sp"
         android:padding="16dp"
-        style="@style/Widget.MaterialComponents.Button"
-        />
+        style="@style/Widget.MaterialComponents.Button" />
     <TextView
         android:id="@+id/btn_delete_categories"
         android:layout_width="match_parent"
@@ -37,7 +35,16 @@
         android:textAlignment="textStart"
         android:textSize="16sp"
         android:padding="16dp"
-        style="@style/Widget.MaterialComponents.Button"
-        />
+        style="@style/Widget.MaterialComponents.Button" />
+    <TextView
+        android:id="@+id/btn_import_export_lists"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:drawableLeft="@drawable/ic_baseline_import_export_24"
+        android:text="@string/import_export_lists"
+        android:textAlignment="textStart"
+        android:textSize="16sp"
+        android:padding="16dp"
+        style="@style/Widget.MaterialComponents.Button" />
 
 </LinearLayout>

@@ -54,4 +54,11 @@
     <string name="delete_category">Delete category</string>
     <string name="choose_category">Choose a category</string>
     <string name="choose_subcategory">Choose a subcategory</string>
+    <string name="dialog_title_close_filter">Reset filter</string>
+    <string name="dialog_message_close_filter">Do you want to reset the filter so that you can perform operations on the list?</string>
+    <string name="import_export_lists">Import / export data</string>
+    <string name="export_lists">Export lists</string>
+    <string name="import_lists">Import lists</string>
+    <string name="export_import_message">Do you want to import data from a file or export the current data to a file?</string>
+    <string name="file_save_download">File saved in downloads folder</string>
 </resources>
