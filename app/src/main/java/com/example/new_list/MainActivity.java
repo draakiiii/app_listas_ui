@@ -1,15 +1,13 @@
 package com.example.new_list;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
 
-import android.annotation.SuppressLint;
-import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -28,6 +26,7 @@ import com.example.new_list.helper.DataConverter;
 import com.example.new_list.model.GlobalList;
 import com.example.new_list.model.Item;
 import com.example.new_list.model.Section;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
@@ -41,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private GlobalMethods database;
     private PrivateListFragment privateListFragment;
     private ArrayList<GlobalList> arrayLists;
+    private androidx.appcompat.app.AlertDialog alert;
     private final int DELETE_DIALOG = 0, ADD_DIALOG = 1;
 
     // Make sure to be using androidx.appcompat.app.ActionBarDrawerToggle version.
@@ -213,12 +213,10 @@ public class MainActivity extends AppCompatActivity {
     protected void deleteGlobalListConfirmDialog(GlobalList globalList) {
         LayoutInflater layoutInflater = LayoutInflater.from(this);
         View promptView = layoutInflater.inflate(R.layout.confirm_delete_global_list, null);
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this).setTitle(R.string.title_delete_list);
+        MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(this, R.style.CustomMaterialDialog).setTitle(R.string.title_delete_list);
         alertDialogBuilder.setView(promptView);
         alertDialogBuilder.setCancelable(false);
-        AlertDialog alert = alertDialogBuilder.create();
-        alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
-        alert.setCanceledOnTouchOutside(true);
+
         final TextView textViewDeleteList = (TextView) promptView.findViewById(R.id.tv_confirmDelete);
         textViewDeleteList.setText(R.string.confirm_delete);
         final Button buttonConfirm = (Button) promptView.findViewById(R.id.buttonConfirmDeleteList);
@@ -242,7 +240,9 @@ public class MainActivity extends AppCompatActivity {
                 alert.dismiss();
             }
         });
-
+        alert = alertDialogBuilder.create();
+        alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
+        alert.setCanceledOnTouchOutside(true);
         alert.show();
     }
 
@@ -250,18 +250,16 @@ public class MainActivity extends AppCompatActivity {
     protected void renameGlobalListDialog(GlobalList globalList) {
         LayoutInflater layoutInflater = LayoutInflater.from(this);
         View promptView = layoutInflater.inflate(R.layout.fragment_add_global_list, null);
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this).setTitle(R.string.rename_list);
+        MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(this, R.style.CustomMaterialDialog).setTitle(R.string.rename_list);
         alertDialogBuilder.setView(promptView);
         alertDialogBuilder.setCancelable(false);
-        AlertDialog alert = alertDialogBuilder.create();
-        alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
-        alert.setCanceledOnTouchOutside(true);
+
         final EditText editTextInputGlobalTitle = (EditText) promptView.findViewById(R.id.inputTitleGlobal);
         editTextInputGlobalTitle.setText(globalList.getName());
-        final Button buttonConfirm = (Button) promptView.findViewById(R.id.buttonConfirmGlobal);
-        buttonConfirm.setOnClickListener(new View.OnClickListener() {
+
+        alertDialogBuilder.setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(DialogInterface dialogInterface, int i) {
                 if (!editTextInputGlobalTitle.getText().toString().matches("")) {
                     String newName = editTextInputGlobalTitle.getText().toString();
                     database.rename(globalList.getId(), newName);
@@ -271,36 +269,32 @@ public class MainActivity extends AppCompatActivity {
                     setTitle(newName);
                     alert.dismiss();
                 } else Toast.makeText(getApplicationContext(),R.string.errorIntroduceName ,Toast.LENGTH_SHORT).show();
-
             }
         });
 
-        final Button buttonCancel = (Button) promptView.findViewById(R.id.buttonCancelGlobal);
-        buttonCancel.setOnClickListener(new View.OnClickListener() {
+        alertDialogBuilder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(DialogInterface dialogInterface, int i) {
                 alert.dismiss();
             }
         });
-
+        alert = alertDialogBuilder.create();
+        alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
+        alert.setCanceledOnTouchOutside(true);
         alert.show();
     }
 
     protected void addGlobalListDialog() {
         LayoutInflater layoutInflater = LayoutInflater.from(this);
         View promptView = layoutInflater.inflate(R.layout.fragment_add_global_list, null);
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this).setTitle(R.string.title_create_list);
+        MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(this, R.style.CustomMaterialDialog).setTitle(R.string.title_create_list);
         alertDialogBuilder.setView(promptView);
         alertDialogBuilder.setCancelable(false);
-        AlertDialog alert = alertDialogBuilder.create();
-        alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
-        alert.setCanceledOnTouchOutside(true);
         final EditText editTextInputGlobalTitle = (EditText) promptView.findViewById(R.id.inputTitleGlobal);
 
-        final Button buttonConfirm = (Button) promptView.findViewById(R.id.buttonConfirmGlobal);
-        buttonConfirm.setOnClickListener(new View.OnClickListener() {
+        alertDialogBuilder.setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(DialogInterface dialogInterface, int i) {
                 if (!editTextInputGlobalTitle.getText().toString().matches("")) {
                     ArrayList<ArrayList> arrayList = new ArrayList<>();
                     GlobalList globalList = new GlobalList(editTextInputGlobalTitle.getText().toString(), DataConverter.fromArrayList(arrayList));
@@ -309,30 +303,29 @@ public class MainActivity extends AppCompatActivity {
                     addGlobalListToArray(globalList);
                     alert.dismiss();
                 } else Toast.makeText(getApplicationContext(),R.string.errorIntroduceName ,Toast.LENGTH_SHORT).show();
-
             }
         });
 
-        final Button buttonCancel = (Button) promptView.findViewById(R.id.buttonCancelGlobal);
-        buttonCancel.setOnClickListener(new View.OnClickListener() {
+        alertDialogBuilder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(DialogInterface dialogInterface, int i) {
                 alert.dismiss();
             }
         });
 
+        alert  = alertDialogBuilder.create();
+        alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
+        alert.setCanceledOnTouchOutside(true);
         alert.show();
     }
 
     protected void showStats(GlobalList globalList) {
         LayoutInflater layoutInflater = LayoutInflater.from(this);
         View promptView = layoutInflater.inflate(R.layout.show_stats, null);
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this).setTitle(R.string.stats_title);
+        MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(this, R.style.CustomMaterialDialog).setTitle(R.string.stats_title);
         alertDialogBuilder.setView(promptView);
         alertDialogBuilder.setCancelable(false);
-        AlertDialog alert = alertDialogBuilder.create();
-        alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
-        alert.setCanceledOnTouchOutside(true);
+
         globalList = database.findById(globalList.getId());
         final TextView stats = (TextView) promptView.findViewById(R.id.stats);
         ArrayList<Section> arrayOfArrays = DataConverter.fromStringSection(globalList.getLists());
@@ -394,14 +387,16 @@ public class MainActivity extends AppCompatActivity {
         } else {
             stats.setText(R.string.show_stats_view);
         }
-        final Button buttonConfirm = (Button) promptView.findViewById(R.id.buttonConfirmGlobal);
-        buttonConfirm.setOnClickListener(new View.OnClickListener() {
+
+        alertDialogBuilder.setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(DialogInterface dialogInterface, int i) {
                 alert.dismiss();
             }
         });
-
+        alert = alertDialogBuilder.create();
+        alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
+        alert.setCanceledOnTouchOutside(true);
         alert.show();
     }
 

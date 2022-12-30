@@ -61,4 +61,13 @@
     <string name="import_lists">Import lists</string>
     <string name="export_import_message">Do you want to import data from a file or export the current data to a file?</string>
     <string name="file_save_download">File saved in downloads folder</string>
+    <string name="delete_all_confirmation">Are you sure you want to delete all lists? This action cannot be undone.</string>
+    <string name="no_lists">There has to be at least one list</string>
+    <string name="lists_deleted">Lists deleted</string>
+    <string name="create_section">Create section</string>
+    <string name="create_filter">Create filter</string>
+    <string name="filter_exact_match">Exact match</string>
+    <string name="filter_any_match">Any match</string>
+    <string name="filter">Filter</string>
+    <string name="filter_null">You must fill in at least one field</string>
 </resources>

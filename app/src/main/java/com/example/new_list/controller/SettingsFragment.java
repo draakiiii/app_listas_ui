@@ -101,14 +101,8 @@ public class SettingsFragment extends Fragment {
         deleteAll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-                    for (GlobalList globalList:database.getItems()) {
-                        navigationView.getMenu().removeItem(globalList.getId());
-                    }
-                    database.deleteAll();
-                } catch (Exception e) {
-                    showToastError(e);
-                }
+                if (database.getItems() != null && !database.getItems().isEmpty()) showDialogDeleteAllLists();
+                else Toast.makeText(getContext(),R.string.no_lists ,Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -141,13 +135,13 @@ public class SettingsFragment extends Fragment {
     }
 
     public void showDialogExportImport() {
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this.getActivity(), R.style.CustomMaterialDialog).setTitle(R.string.dialog_title_close_filter);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this.getActivity(), R.style.CustomMaterialDialog);
         builder.setTitle(R.string.import_export_lists);
         builder.setMessage(R.string.dialog_message_close_filter);
         builder.setPositiveButton(R.string.import_lists, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
+                importFile();
             }
         });
         builder.setNeutralButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -167,6 +161,36 @@ public class SettingsFragment extends Fragment {
 
             }
         });
+        androidx.appcompat.app.AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    public void showDialogDeleteAllLists() {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this.getActivity(), R.style.CustomMaterialDialog);
+        builder.setTitle(R.string.delete_all);
+        builder.setMessage(R.string.delete_all_confirmation);
+        builder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                try {
+                    for (GlobalList globalList:database.getItems()) {
+                        navigationView.getMenu().removeItem(globalList.getId());
+                    }
+                    database.deleteAll();
+                    Toast.makeText(getContext(),R.string.lists_deleted ,Toast.LENGTH_SHORT).show();
+                } catch (Exception e) {
+                    showToastError(e);
+                }
+            }
+        });
+
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
         androidx.appcompat.app.AlertDialog dialog = builder.create();
         dialog.show();
     }
@@ -282,7 +306,8 @@ public class SettingsFragment extends Fragment {
                 .show();
     }
 
-//    public void importFile() {
+    public void importFile() {
+        Toast.makeText(getContext(), R.string.unavailable,Toast.LENGTH_SHORT).show();
 //        // Mostrar un diálogo de selección de archivo
 //        new AlertDialog.Builder(getContext())
 //                .setTitle("Seleccionar archivo a importar")
@@ -358,7 +383,7 @@ public class SettingsFragment extends Fragment {
 //                })
 //                .setNegativeButton("Cancelar", null)
 //                .show();
-//    }
+    }
 
     // Declara una constante para el código de solicitud del Intent
     private static final int PICK_FILE_REQUEST_CODE = 1;

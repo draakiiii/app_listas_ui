@@ -22,36 +22,5 @@
         android:minHeight="48dp"/>
 
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/buttonDeleteSection"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:background="@drawable/custom_button"
-            android:text="@string/delete"/>
-
-        <Button
-            android:id="@+id/buttonConfirmSection"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:text="@string/confirm"
-            android:background="@drawable/custom_button"/>
-
-<!--        <Button-->
-<!--            android:id="@+id/buttonDuplicateSection"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_margin="5dp"-->
-<!--            android:text="@string/duplicate"-->
-<!--            android:background="@drawable/custom_button"/>-->
-
-
-    </LinearLayout>
 
 </LinearLayout>

@@ -1,13 +1,12 @@
 package com.example.new_list.controller;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.Toolbar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -45,7 +44,6 @@ import com.example.new_list.model.Item;
 import com.example.new_list.model.Section;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-import java.sql.SQLOutput;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -81,7 +79,7 @@ public class PrivateListFragment extends Fragment{
     private static AtomicInteger countButton;
     private Spinner categorySpinner, subCategorySpinner;
     private String inputDateStringStart, inputDateStringEnd;
-    private Item tempItem;
+    private Item filterItem;
     private int height, width, toPos, fromPos;
     private ArrayList<String> categoriesName, subcategoriesName;
     private ArrayAdapter<Category> adapterSpinnerCategory, adapterSpinnerSubcategory;
@@ -126,7 +124,7 @@ public class PrivateListFragment extends Fragment{
             getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
             height = displayMetrics.heightPixels;
             width = displayMetrics.widthPixels;
-            width = (width / 100) * 90;
+            width = (width / 100) * 95;
             filterOn = false;
             dialogOnScreen = false;
             formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -208,7 +206,6 @@ public class PrivateListFragment extends Fragment{
             arrayOfArrays.add(new Section(title, new ArrayList<>()));
             int pos = arrayOfArrays.size() - 1;
             ArrayList<Item> arrayOfItemsPrivate = DataConverter.changeItemType(arrayOfArrays.get(pos).getListOfItems());
-            Toast.makeText(getActivity(),R.string.list_created,Toast.LENGTH_SHORT).show();
             generateGlobalView(pos, arrayOfItemsPrivate, arrayOfArrays.get(pos).getTitle());
         } catch (Exception e) {
             showToastError(e);
@@ -216,56 +213,95 @@ public class PrivateListFragment extends Fragment{
     }
 
     public void generateGlobalViewFilter() {
-        filterOn = false;
         for (int i = 0; i < mColumnCount; i++) {
             ArrayList<Item> arrayOfItemsPrivate = DataConverter.changeItemType(arrayOfArrays.get(i).getListOfItems());
             generateGlobalView(i, arrayOfItemsPrivate, arrayOfArrays.get(i).getTitle());
         }
     }
 
-    public void filterList(ArrayList<Item> arrayIndividual, ArrayList<ItemAdapter> arrayOfAdapters, int pos, String filterType, String filterValue) {
+    public void filterList(ArrayList<Item> arrayIndividual, ArrayList<ItemAdapter> arrayOfAdapters, int pos, Item itemFilteredValues, boolean exactMatch) {
 
-        ArrayList<ArrayList> arrayList = new ArrayList<>();
-        GlobalList globalList = new GlobalList(arrayIndividual.get(pos).getTitle(), DataConverter.fromArrayList(arrayList));
-        ArrayList<Item> tempList = new ArrayList<Item>();
+        try {
+            ArrayList<ArrayList> arrayList = new ArrayList<>();
+            GlobalList globalList = new GlobalList("filterListTemporal", DataConverter.fromArrayList(arrayList));
+            ArrayList<Item> tempList = new ArrayList<Item>();
 
-        for (Item item : arrayIndividual) {
-            switch (filterType) {
-                case "title":
-                    if (item.getTitle().contains(filterValue)) {
-                        tempList.add(item);
+            for (Item item : arrayIndividual) {
+                boolean include = true;
+                if (exactMatch) {
+
+                    if (!itemFilteredValues.title.isEmpty()) {
+                        if (!item.title.toLowerCase().equals(itemFilteredValues.title.toLowerCase())) {
+                            include = false;
+                        }
                     }
-                    break;
-                case "category":
-                    if (item.getCategory().toString().equals(filterValue)) {
-                        tempList.add(item);
+
+                    if (!itemFilteredValues.description.isEmpty()) {
+                        if (exactMatch) {
+                            if (!item.description.toLowerCase().equals(itemFilteredValues.description.toLowerCase())) {
+                                include = false;
+                            }
+                        }
                     }
-                    break;
-                case "dateStart":
-                    Date dateStartItem = (Date) formatter.parse(item.getDateStart());
-                    Date dateStartFilter = (Date) formatter.parse(filterValue);
-                    if (dateStartItem.compareTo(dateStartFilter) >= 0) {
-                        tempList.add(item);
+
+                    if (!itemFilteredValues.dateStart.isEmpty()) {
+                        if (exactMatch) {
+                            if (!item.dateStart.equals(itemFilteredValues.dateStart)) {
+                                include = false;
+                            }
+                        }
                     }
-                    break;
-                case "dateEnd":
-                    Date dateEndItem = (Date) formatter.parse(item.getDateEnd());
-                    Date dateEndFilter = (Date) formatter.parse(filterValue);
-                    if (dateEndItem.compareTo(dateEndFilter) <= 0) {
-                        tempList.add(item);
+
+                    if (!itemFilteredValues.dateEnd.isEmpty()) {
+                        if (exactMatch) {
+                            if (!item.dateEnd.equals(itemFilteredValues.dateEnd)) {
+                                include = false;
+                            }
+                        }
                     }
-                    break;
-                default:
-                    System.out.println("default message");
+
+                    if (itemFilteredValues.category != null) {
+                        if (exactMatch) {
+                            if (!item.category.equals(itemFilteredValues.category)) {
+                                include = false;
+                            }
+                        }
+                    }
+
+                    if (itemFilteredValues.getSubcategorySelected() != null) {
+                        if (exactMatch) {
+                            if (!item.getSubcategorySelected().equals(itemFilteredValues.getSubcategorySelected())) {
+                                include = false;
+                            }
+                        }
+                    }
+                }
+
+                //NO FUNCIONA
+                if (!exactMatch && !item.title.toLowerCase().equals(itemFilteredValues.title.toLowerCase())
+                        &&  !item.description.toLowerCase().equals(itemFilteredValues.description.toLowerCase())
+                        && !item.dateStart.equals(itemFilteredValues.dateStart)
+                        && !item.dateEnd.equals(itemFilteredValues.dateEnd)) {
+
+                    include = false;
+                }
+
+                if (include) {
+                    tempList.add(item);
+                }
             }
+
+
+            arrayOfAdapters.get(pos).updateData(tempList);
+        } catch (Exception e) {
+            showToastError(e);
         }
-        arrayOfAdapters.get(pos).updateData(tempList);
     }
 
-    public void filterAllLists(String filterType, String filterValue) {
+    public void filterAllLists(Item itemFilteredValues, boolean exactMatch) {
         for (int i = 0; i < mColumnCount; i++) {
             ArrayList<Item> arrayOfItemsPrivate = DataConverter.changeItemType(arrayOfArrays.get(i).getListOfItems());
-            filterList(arrayOfItemsPrivate, arrayOfAdapters, i, filterType, filterValue);
+            filterList(arrayOfItemsPrivate, arrayOfAdapters, i, itemFilteredValues, exactMatch);
         }
     }
 
@@ -447,12 +483,11 @@ public class PrivateListFragment extends Fragment{
             LayoutInflater layoutInflater = LayoutInflater.from(this.getActivity());
             View promptView = layoutInflater.inflate(R.layout.fragment_add_item, null);
             MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(this.getActivity(), R.style.CustomMaterialDialog).setTitle(R.string.dialogEditItem);
-            alertDialogBuilder.setView(promptView);
-
             createDialogButtons(pos, arrayIndividual, adapter, alertDialogBuilder, getString(R.string.dialogAddItem), promptView);
-
-//            initDialogElements(alertDialogBuilder, getString(R.string.dialogAddItem), null, null, null);
-//            itemDetailDialog(alertDialogBuilder, promptView, alert, arrayIndividual, adapter, pos);
+            alertDialogBuilder.setView(promptView);
+            alert = alertDialogBuilder.create();
+            alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
+            alert.setCanceledOnTouchOutside(true);
             alert.show();
 
         } catch (Exception e) {
@@ -468,10 +503,11 @@ public class PrivateListFragment extends Fragment{
             LayoutInflater layoutInflater = LayoutInflater.from(this.getActivity());
             View promptView = layoutInflater.inflate(R.layout.fragment_add_item, null);
             MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(this.getActivity(), R.style.CustomMaterialDialog).setTitle(R.string.dialogEditItem);
-            alertDialogBuilder.setView(promptView);
-
             editDialogButtons(item, pos, listOfItems, adapter, alertDialogBuilder, getString(R.string.dialogEditItem), promptView);
-
+            alertDialogBuilder.setView(promptView);
+            alert = alertDialogBuilder.create();
+            alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
+            alert.setCanceledOnTouchOutside(true);
             alert.show();
         } catch (Exception e) {
             showToastError(e);
@@ -498,32 +534,27 @@ public class PrivateListFragment extends Fragment{
 
             LayoutInflater layoutInflater = LayoutInflater.from(this.getActivity());
             View promptView = layoutInflater.inflate(R.layout.fragment_edit_section, null);
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this.getActivity()).setTitle(R.string.edit_section);
+            MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(this.getActivity(), R.style.CustomMaterialDialog).setTitle(R.string.edit_section);
             alertDialogBuilder.setView(promptView);
             alertDialogBuilder.setCancelable(false);
-            AlertDialog alert = alertDialogBuilder.create();
-            alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
-            alert.setCanceledOnTouchOutside(true);
             EditText editTextTitle = (EditText) promptView.findViewById(R.id.inputTitle_section);
             editTextTitle.setText(arrayOfArrays.get(pos).getTitle());
-            Button buttonConfirm = (Button) promptView.findViewById(R.id.buttonConfirmSection);
-            buttonConfirm.setOnClickListener(new View.OnClickListener() {
+
+            alertDialogBuilder.setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                 @Override
-                public void onClick(View v) {
+                public void onClick(DialogInterface dialogInterface, int i) {
                     if (!editTextTitle.getText().toString().matches("") && !editTextTitle.getText().toString().equals(arrayOfArrays.get(pos).getTitle())) {
                         arrayOfArrays.get(pos).setTitle(editTextTitle.getText().toString());
                         tv_private_title.setText(editTextTitle.getText().toString());
                         updateGlobalList(pos, list);
-                        Toast.makeText(getActivity(),R.string.section_name_changed,Toast.LENGTH_SHORT).show();
                         alert.dismiss();
                     } else Toast.makeText(getActivity(),R.string.errorIntroduceTitle,Toast.LENGTH_SHORT).show();
-
                 }
             });
-            final Button buttonDelete = (Button) promptView.findViewById(R.id.buttonDeleteSection);
-            buttonDelete.setOnClickListener(new View.OnClickListener() {
+
+            alertDialogBuilder.setNegativeButton(R.string.delete, new DialogInterface.OnClickListener() {
                 @Override
-                public void onClick(View v) {
+                public void onClick(DialogInterface dialogInterface, int i) {
                     Section section = arrayOfArrays.get(pos);
                     arrayOfArrays.remove(pos);
                     scrollView.getParent();
@@ -534,16 +565,10 @@ public class PrivateListFragment extends Fragment{
                     alert.dismiss();
                 }
             });
-//        final Button buttonDuplicate = (Button) promptView.findViewById(R.id.buttonDuplicateSection);
-//        buttonDuplicate.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-////                duplicateItem(item, adapter, );
-////                Toast.makeText(getActivity(),R.string.section_duplicated,Toast.LENGTH_SHORT).show();
-//                Toast.makeText(getActivity(),R.string.unavailable,Toast.LENGTH_SHORT);
-//                alert.dismiss();
-//            }
-//        });
+
+            alert = alertDialogBuilder.create();
+            alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
+            alert.setCanceledOnTouchOutside(true);
             alert.show();
         } catch (Exception e) {
             System.out.println(e.getLocalizedMessage());
@@ -595,32 +620,30 @@ public class PrivateListFragment extends Fragment{
 
             LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
             View promptView = layoutInflater.inflate(R.layout.fragment_add_global_list, null);
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity()).setTitle(R.string.dialogAddItem);
+            MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(getActivity(), R.style.CustomMaterialDialog).setTitle(R.string.create_section);
             alertDialogBuilder.setView(promptView);
             alertDialogBuilder.setCancelable(false);
-            AlertDialog alert = alertDialogBuilder.create();
-            alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
-            alert.setCanceledOnTouchOutside(true);
             final EditText editTextTitle = (EditText) promptView.findViewById(R.id.inputTitleGlobal);
-            final Button buttonConfirm = (Button) promptView.findViewById(R.id.buttonConfirmGlobal);
-            buttonConfirm.setOnClickListener(new View.OnClickListener() {
+            alertDialogBuilder.setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                 @Override
-                public void onClick(View v) {
+                public void onClick(DialogInterface dialogInterface, int i) {
                     if (!editTextTitle.getText().toString().matches("")) {
                         generateNewListView(editTextTitle.getText().toString());
                         alert.dismiss();
                     } else Toast.makeText(getActivity(),R.string.errorIntroduceTitle,Toast.LENGTH_SHORT).show();
-
                 }
             });
-            final Button buttonCancel = (Button) promptView.findViewById(R.id.buttonCancelGlobal);
-            buttonCancel.setOnClickListener(new View.OnClickListener() {
+
+            alertDialogBuilder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                 @Override
-                public void onClick(View v) {
+                public void onClick(DialogInterface dialogInterface, int i) {
                     alert.dismiss();
                 }
             });
 
+            alert = alertDialogBuilder.create();
+            alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
+            alert.setCanceledOnTouchOutside(true);
             alert.show();
         } catch (Exception e) {
             showToastError(e);
@@ -632,18 +655,15 @@ public class PrivateListFragment extends Fragment{
 
             LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
             View promptView = layoutInflater.inflate(R.layout.fragment_add_global_list, null);
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity()).setTitle(R.string.add_category);
+            MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(getActivity(), R.style.CustomMaterialDialog).setTitle(R.string.add_category);
             alertDialogBuilder.setView(promptView);
             alertDialogBuilder.setCancelable(false);
-            AlertDialog alert = alertDialogBuilder.create();
-            alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
-            alert.setCanceledOnTouchOutside(true);
+
             final EditText editTextInputGlobalTitle = (EditText) promptView.findViewById(R.id.inputTitleGlobal);
 
-            final Button buttonConfirm = (Button) promptView.findViewById(R.id.buttonConfirmGlobal);
-            buttonConfirm.setOnClickListener(new View.OnClickListener() {
+            alertDialogBuilder.setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                 @Override
-                public void onClick(View v) {
+                public void onClick(DialogInterface dialogInterface, int i) {
                     if (!editTextInputGlobalTitle.getText().toString().matches("")) {
                         Category category = new Category(editTextInputGlobalTitle.getText().toString());
                         if (type == 0) {
@@ -662,19 +682,18 @@ public class PrivateListFragment extends Fragment{
                         }
                         alert.dismiss();
                     } else Toast.makeText(getContext(),R.string.errorIntroduceName ,Toast.LENGTH_SHORT).show();
-
-
                 }
             });
 
-            final Button buttonCancel = (Button) promptView.findViewById(R.id.buttonCancelGlobal);
-            buttonCancel.setOnClickListener(new View.OnClickListener() {
+            alertDialogBuilder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                 @Override
-                public void onClick(View v) {
+                public void onClick(DialogInterface dialogInterface, int i) {
                     alert.dismiss();
                 }
             });
-
+            alert = alertDialogBuilder.create();
+            alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
+            alert.setCanceledOnTouchOutside(true);
             alert.show();
         } catch (Exception e) {
             showToastError(e);
@@ -848,9 +867,9 @@ public class PrivateListFragment extends Fragment{
             };
 
             initDialogElements(builder, title, acceptButton, null, null);
-            alert = builder.create();
-            alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
-            alert.setCanceledOnTouchOutside(true);
+//            alert = builder.create();
+//            alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
+//            alert.setCanceledOnTouchOutside(true);
             itemDetailDialog(builder, view, alert, listOfItems, adapter, pos, null, INPUT_DIALOG);
         } catch (Exception e) {
             showToastError(e);
@@ -900,9 +919,7 @@ public class PrivateListFragment extends Fragment{
             };
 
             initDialogElements(builder, title, acceptButton, deleteButton, duplicateButton);
-            alert = builder.create();
-            alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
-            alert.setCanceledOnTouchOutside(true);
+
             itemDetailDialog(builder, view, alert, listOfItems, adapter, pos, item,EDIT_DIALOG);
         } catch (Exception e) {
             showToastError(e);
@@ -936,7 +953,6 @@ public class PrivateListFragment extends Fragment{
 
     public void setEditData(Item item) {
         try {
-            tempItem = item;
 
             if (!item.dateStart.matches("")) {
                 formatStringDateFromString(item.getDateStart(), inputDateStart, inputDateStringStart);
@@ -972,12 +988,223 @@ public class PrivateListFragment extends Fragment{
         ((MainActivity) getActivity()).addMenuItem(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                filterAllLists("title", "ghoul");
-                ((MainActivity) getActivity()).menuCross(globalList);
-                filterOn = true;
+                dialogFilters();
                 return false;
             }
-        }, "filtrar");
+        }, getString(R.string.filter));
+    }
+
+    public void dialogFilters() {
+        try {
+            LayoutInflater layoutInflater = LayoutInflater.from(this.getActivity());
+            View promptView = layoutInflater.inflate(R.layout.fragment_add_item, null);
+            MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(this.getActivity(), R.style.CustomMaterialDialog).setTitle(R.string.create_filter);
+            alertDialogBuilder.setView(promptView);
+
+
+            Calendar mcurrentDate = Calendar.getInstance();
+
+            final int mYear = mcurrentDate.get(Calendar.YEAR),
+                    mMonth = mcurrentDate.get(Calendar.MONTH),
+                    mDay = mcurrentDate.get(Calendar.DAY_OF_MONTH);
+
+            editTextTitle = (EditText) promptView.findViewById(R.id.inputTitle);
+            editTextDescription = (EditText) promptView.findViewById(R.id.inputDescription);
+            inputDateStart = promptView.findViewById(R.id.inputDate);
+            inputDateEnd = promptView.findViewById(R.id.inputDate2);
+
+            final TextView tv_categoryText = (TextView) promptView.findViewById(R.id.tv_spinner_subcategory);
+
+            categorySpinner = (Spinner) promptView.findViewById(R.id.categorySpinner);
+            subCategorySpinner = (Spinner) promptView.findViewById(R.id.subcategorySpinner);
+            categorySpinner.setAdapter(adapterSpinnerCategory);
+            subCategorySpinner.setEnabled(true);
+            subCategorySpinner.setAdapter(adapterSpinnerSubcategory);
+            subCategorySpinner.setVisibility(View.GONE);
+            tv_categoryText.setVisibility(View.GONE);
+            categorySpinner.setSelection(1); // Selecciona el segundo índice, que es el general
+
+            Item itemNull = new Item(editTextTitle.getText().toString(), editTextDescription.getText().toString(), inputDateStart.getText().toString()  , inputDateEnd.getText().toString(), (Category) categorySpinner.getSelectedItem());
+
+
+            categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+
+                    if (i == 0) {
+                        addCategoryDialog(0);
+                        subCategorySpinner.setVisibility(View.GONE);
+                        tv_categoryText.setVisibility(View.GONE);
+                    } else if (i != 1) {
+                        subCategorySpinner.setVisibility(View.VISIBLE);
+                        tv_categoryText.setVisibility(View.VISIBLE);
+                        tempCategory = (Category) categorySpinner.getSelectedItem();
+                        initializeSubcategories();
+
+                        adapterSpinnerSubcategory.notifyDataSetChanged();
+
+                        if (filterItem != null) {
+                            if (filterItem.getSubcategorySelected() == null || filterItem.getSubcategorySelected().equals("")) subCategorySpinner.setSelection(1);
+                            else if (filterItem.getCategory().getArrayOfSubcategories() != null && filterItem.getCategory().getArrayOfSubcategories().contains(filterItem.getSubcategorySelected().getName())) subCategorySpinner.setSelection(filterItem.getSubcategorySelected().getId()+2);
+                            else subCategorySpinner.setSelection(1);
+                        } else subCategorySpinner.setSelection(1);
+
+
+                    } else {
+                        subCategorySpinner.setVisibility(View.GONE);
+                        tv_categoryText.setVisibility(View.GONE);
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> adapterView) {
+                    subCategorySpinner.setVisibility(View.GONE);
+                    tv_categoryText.setVisibility(View.GONE);
+                }
+            });
+
+            // Se establece el evento de selección en el spinner de subcategorías
+            subCategorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    if (position == 0) {
+                        addCategoryDialog(1);
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+                    // Código a ejecutar cuando no se selecciona ninguna subcategoría
+                }
+            });
+
+            inputDateStart.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    DatePickerDialog mDatePicker1 = new DatePickerDialog(getActivity(),
+                            new DatePickerDialog.OnDateSetListener() {
+                                public void onDateSet(DatePicker datepicker, int selectedyear, int selectedmonth, int selectedday) {
+                                    inputDateStart.setText(formatStringDate(selectedyear, selectedmonth+1, selectedday));
+                                }
+                            }, mYear, mMonth, mDay);
+                    mDatePicker1.setButton(DatePickerDialog.BUTTON_NEGATIVE, getString(R.string.delete), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            inputDateStart.setText("");
+                            inputDateStringStart = "";
+                        }
+                    });
+                    mDatePicker1.show();
+                }
+            });
+
+            inputDateEnd.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    DatePickerDialog mDatePicker2 = new DatePickerDialog(getActivity(),
+                            new DatePickerDialog.OnDateSetListener() {
+                                public void onDateSet(DatePicker datepicker, int selectedyear, int selectedmonth, int selectedday) {
+                                    inputDateEnd.setText(formatStringDate(selectedyear, selectedmonth+1, selectedday));
+                                }
+                            }, mYear, mMonth, mDay);
+                    mDatePicker2.setButton(DatePickerDialog.BUTTON_NEGATIVE, getString(R.string.delete), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            inputDateEnd.setText("");
+                            inputDateStringEnd = "";
+                        }
+                    });
+                    mDatePicker2.show();
+                }
+            });
+
+
+            alertDialogBuilder.setPositiveButton(R.string.filter_any_match, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    boolean fieldsChanged = false;
+                    if (subCategorySpinner.getSelectedItem() == null) {
+                        filterItem = new Item(editTextTitle.getText().toString(), editTextDescription.getText().toString(), inputDateStart.getText().toString()  , inputDateEnd.getText().toString(), (Category) categorySpinner.getSelectedItem());
+                    } else filterItem = new Item(editTextTitle.getText().toString(), editTextDescription.getText().toString(), inputDateStart.getText().toString()  , inputDateEnd.getText().toString(), (Category) categorySpinner.getSelectedItem(), (Category) subCategorySpinner.getSelectedItem());
+
+                    if (!editTextTitle.getText().toString().isEmpty()) {
+                        fieldsChanged = true;
+                    }
+                    if (!editTextDescription.getText().toString().isEmpty()) {
+                        fieldsChanged = true;
+                    }
+                    if (!inputDateStart.getText().toString().isEmpty()) {
+                        fieldsChanged = true;
+                    }
+                    if (!inputDateEnd.getText().toString().isEmpty()) {
+                        fieldsChanged = true;
+                    }
+                    if (subCategorySpinner.getSelectedItem() != null) {
+                        fieldsChanged = true;
+                    }
+
+                    if (fieldsChanged) {
+                        alert.dismiss();
+                        inputDateStringStart = "";
+                        inputDateStringEnd = "";
+                        filterAllLists(filterItem, false);
+                        ((MainActivity) getActivity()).menuCross(globalList);
+                        filterOn = true;
+                    } else Toast.makeText(getContext(), R.string.filter_null, Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            alertDialogBuilder.setNegativeButton(R.string.filter_exact_match, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    boolean fieldsChanged = false;
+                    if (subCategorySpinner.getSelectedItem() == null) {
+                        filterItem = new Item(editTextTitle.getText().toString(), editTextDescription.getText().toString(), inputDateStart.getText().toString()  , inputDateEnd.getText().toString(), (Category) categorySpinner.getSelectedItem());
+                    } else filterItem = new Item(editTextTitle.getText().toString(), editTextDescription.getText().toString(), inputDateStart.getText().toString()  , inputDateEnd.getText().toString(), (Category) categorySpinner.getSelectedItem(), (Category) subCategorySpinner.getSelectedItem());
+
+                    if (!editTextTitle.getText().toString().isEmpty()) {
+                        fieldsChanged = true;
+                    }
+                    if (!editTextDescription.getText().toString().isEmpty()) {
+                        fieldsChanged = true;
+                    }
+                    if (!inputDateStart.getText().toString().isEmpty()) {
+                        fieldsChanged = true;
+                    }
+                    if (!inputDateEnd.getText().toString().isEmpty()) {
+                        fieldsChanged = true;
+                    }
+                    if (subCategorySpinner.getSelectedItem() != null) {
+                        fieldsChanged = true;
+                    }
+
+                    if (fieldsChanged) {
+                        alert.dismiss();
+                        inputDateStringStart = "";
+                        inputDateStringEnd = "";
+                        filterAllLists(filterItem, true);
+                        ((MainActivity) getActivity()).menuCross(globalList);
+                        filterOn = true;
+                    } else Toast.makeText(getContext(), R.string.filter_null, Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            alertDialogBuilder.setNeutralButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+
+            alert = alertDialogBuilder.create();
+            alert.getWindow().setBackgroundDrawableResource(R.drawable.dialog_edit);
+            alert.setCanceledOnTouchOutside(true);
+            alert.show();
+
+        } catch (Exception e) {
+            showToastError(e);
+
+        }
     }
 
 }

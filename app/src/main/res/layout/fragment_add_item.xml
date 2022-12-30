@@ -17,7 +17,10 @@
         android:layout_marginBottom="4dp"
         android:hint="@string/set_title"
         android:inputType="text"
-        android:minHeight="48dp"/>
+        android:minHeight="48dp"
+        android:textColorHint="#757575"
+        android:autofillHints="" />
+
     <EditText
         android:id="@+id/inputDescription"
         android:layout_width="match_parent"
@@ -28,7 +31,9 @@
         android:layout_marginBottom="4dp"
         android:hint="@string/set_description"
         android:inputType="text"
-        android:minHeight="48dp"/>
+        android:minHeight="48dp"
+        android:textColorHint="#757575"
+        android:autofillHints="" />
     <TextView
         android:id="@+id/tv_spinner"
         android:layout_width="match_parent"
@@ -81,10 +86,13 @@
             android:layout_marginTop="16dp"
             android:layout_marginRight="4dp"
             android:layout_marginBottom="4dp"
+            android:focusable="false"
             android:hint="@string/set_date"
             android:inputType="date"
             android:minHeight="48dp"
-            android:focusable="false"/>
+            android:textColorHint="#757575"
+            android:autofillHints="" />
+
         <EditText
             android:id="@+id/inputDate2"
             android:layout_width="wrap_content"
@@ -93,10 +101,12 @@
             android:layout_marginTop="16dp"
             android:layout_marginRight="4dp"
             android:layout_marginBottom="4dp"
+            android:focusable="false"
             android:hint="@string/set_end_date"
             android:inputType="date"
             android:minHeight="48dp"
-            android:focusable="false"/>
+            android:textColorHint="#757575"
+            android:autofillHints="" />
 
 
     </LinearLayout>
@@ -114,7 +124,8 @@
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:background="@drawable/custom_button"
-            android:text="@string/cancel"/>
+            android:text="@string/cancel"
+            style="?android:attr/buttonBarButtonStyle" />
 
         <Button
             android:id="@+id/buttonConfirmAddItem"
@@ -122,7 +133,8 @@
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/confirm"
-            android:background="@drawable/custom_button"/>
+            android:background="@drawable/custom_button"
+            style="?android:attr/buttonBarButtonStyle" />
 
     </LinearLayout>
 

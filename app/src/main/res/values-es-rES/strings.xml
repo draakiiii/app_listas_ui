@@ -60,4 +60,13 @@
     <string name="import_lists">Importar listas</string>
     <string name="export_import_message">¿Quieres importar datos de un archivo o exportar los datos actuales a un archivo?</string>
     <string name="file_save_download">Archivo guardado en la carpeta de descargas</string>
+    <string name="delete_all_confirmation">¿Estás seguro de que quieres eliminar todas las listas ? Esta acción no se puede deshacer.</string>
+    <string name="no_lists">Tiene que haber al menos una lista</string>
+    <string name="lists_deleted">Listas borradas</string>
+    <string name="create_section">Crear sección</string>
+    <string name="create_filter">Crear filtro</string>
+    <string name="filter_any_match">Cualquier coincidencia</string>
+    <string name="filter_exact_match">Coincidencia exacta</string>
+    <string name="filter">Filtrar</string>
+    <string name="filter_null">Debes llenar al menos un campo</string>
 </resources>
